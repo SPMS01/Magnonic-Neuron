@@ -1,0 +1,28 @@
+SetCellSize(20e-9, 20e-9, 100e-9) // 20 nm resolution, 100nm thickness (single layer
+SetGridSize(150, 82, 1) // 3um x 1.64um x 100nm
+B_ext = Vector(0, 0, 200e-3) // 200 mT external magnetic field in z-direction
+Msat = 0 // Default magnetisation saturation
+Aex = 3.5e-12 // Exchange stiffness constant
+alpha = 2e-4 // LL damping constant
+
+// === Magnonic Neuron ===
+
+input_waveguide := Cuboid(3e-6, 300e-9, 100e-9).Transl(0, 670e-9, 0) // 3um long, 300nm wide, 100nm thick
+output_waveguide := Cuboid(3e-6, 300e-9, 100e-9).Transl(0, -670e-9, 0) // 3um long, 300nm wide, 100nm thick
+ring_ext := Cylinder(1e-6, 100e-9).Transl(0, 0, 0) // 1um radius, 100nm thick, centered at (0, 0, 0)
+ring_int := Cylinder(400e-9, 100e-9).Transl(0, 0, 0) // 400nm radius, 100nm thick, centered at (0, 0, 0\
+ring := ring_ext.sub(ring_int)
+
+DefRegion(1, input_waveguide)
+DefRegion(2, output_waveguide)
+DefRegion(3, ring)
+
+ring_resonator := ring.Add(input_waveguide).Add(output_waveguide) // Combine regions
+
+SetGeom(ring_resonator) // Set the geometry for the simulation
+
+// === Running the Simulation ===
+
+Relax()
+
+Snapshot(Geom)
