@@ -1,1 +1,5 @@
 *.out
+*.png
+*.mp4
+
+__pycache__

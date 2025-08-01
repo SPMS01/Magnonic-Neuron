@@ -5,24 +5,55 @@ Msat = 0 // Default magnetisation saturation
 Aex = 3.5e-12 // Exchange stiffness constant
 alpha = 2e-4 // LL damping constant
 
+// === Regions ===
+
+yig := 1
+excitation_region := 2
+dampener_0_2 := 3
+dampener_0_5 := 4
+
+Msat.SetRegion(yig, 140e3)
+Msat.SetRegion(excitation_region, 140e3)
+
 // === Magnonic Neuron ===
 
-input_waveguide := Cuboid(3e-6, 300e-9, 100e-9).Transl(0, 670e-9, 0) // 3um long, 300nm wide, 100nm thick
-output_waveguide := Cuboid(3e-6, 300e-9, 100e-9).Transl(0, -670e-9, 0) // 3um long, 300nm wide, 100nm thick
+input_waveguide := Cuboid(3e-6, 300e-9, 100e-9).Transl(0, 670e-9, 0) // 3um long, 300nm wide, 100nm thick, 20 nm above ring
+output_waveguide := Cuboid(3e-6, 300e-9, 100e-9).Transl(0, -670e-9, 0) // 3um long, 300nm wide, 100nm thick, 20 nm below ring
 ring_ext := Cylinder(1e-6, 100e-9).Transl(0, 0, 0) // 1um radius, 100nm thick, centered at (0, 0, 0)
-ring_int := Cylinder(400e-9, 100e-9).Transl(0, 0, 0) // 400nm radius, 100nm thick, centered at (0, 0, 0\
+ring_int := Cylinder(400e-9, 100e-9).Transl(0, 0, 0) // 400nm radius, 100nm thick, centered at (0, 0, 0)
 ring := ring_ext.sub(ring_int)
 
-DefRegion(1, input_waveguide)
-DefRegion(2, output_waveguide)
-DefRegion(3, ring)
+DefRegion(yig, input_waveguide)
+DefRegion(yig, output_waveguide)
+DefRegion(yig, ring)
 
 ring_resonator := ring.Add(input_waveguide).Add(output_waveguide) // Combine regions
 
 SetGeom(ring_resonator) // Set the geometry for the simulation
 
+// === Edge Dampeners ===
+
+DefRegion(dampener_0_5, xrange(1.4e-6, 1.5e-6).intersect(input_waveguide).intersect(output_waveguide)) // Edge dampeners region
+DefRegion(dampener_0_5, xrange(-1.5e-6, -1.4e-6).intersect(input_waveguide).intersect(output_waveguide)) // Edge dampeners region
+
+DefRegion(dampener_0_2, xrange(1.3e-6, 1.4e-6).intersect(input_waveguide).intersect(output_waveguide)) // Edge dampeners region
+DefRegion(dampener_0_2, xrange(-1.4e-6, -1.3e-6).intersect(input_waveguide).intersect(output_waveguide)) // Edge dampeners region
+
+alpha.SetRegion(dampener_0_5, 0.5)
+alpha.SetRegion(dampener_0_2, 0.2)
+
 // === Running the Simulation ===
 
 Relax()
 
+Save(m)
+AutoSave(m, 50e-12)
+
+// Excitation region
+DefRegion(excitation_region, xrange(1.2e-6, 1.3e-6).intersect(input_waveguide))
+B_ext.SetRegion(excitation_region, Vector(0, 0.1e-3 * sin(2 * pi * 2.8e9 * t), 200e-3)) // excitation: 0.1 mT at 2.8 GHz, 200 mT in z-direction
+
 Snapshot(Geom)
+Snapshot(alpha)
+
+Run(100e-9)
