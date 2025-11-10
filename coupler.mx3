@@ -1,0 +1,75 @@
+SetCellSize(20e-9, 20e-9, 100e-9) // 20 nm resolution, 100nm thickness (single layer
+SetGridSize(700, 31, 1)
+B_ext = Vector(0, 0, 200e-3) // 200 mT external magnetic field in z-direction
+Msat = 0 // Default magnetisation saturation
+Aex = 3.5e-12 // Exchange stiffness constant
+alpha = 2e-4 // LL damping constant
+
+// === Regions ===
+
+yig := 1
+excitation_region := 2
+coupler_region := 3
+dampener_min_region := 10
+dampener_max_region := 49
+
+Msat.SetRegion(yig, 140e3)
+Msat.SetRegion(excitation_region, 140e3)
+Msat.SetRegion(coupler_region, 140e3)
+
+alpha.SetRegion(coupler_region, 2e-4)
+
+// === Waveguide ===
+waveguide := Cuboid(14e-6, 300e-9, 100e-9).Transl(0, 160e-9, 0)
+coupler := Cuboid(7e-6, 300e-9, 100e-9).Transl(0, -160e-9, 0)
+
+system := waveguide.add(coupler)
+// system := waveguide
+SetGeom(system)
+DefRegion(yig, system)
+
+DefRegion(coupler_region, coupler)
+
+// === Edge Dampeners ===
+
+alpha_max := 0.5
+damping_slice_width := 20e-9 // 20 nm width for each dampening region
+damping_region_width := (dampener_max_region - dampener_min_region + 1) * damping_slice_width
+
+for i := dampener_min_region; i <= dampener_max_region; i++ {
+    offset := (i - dampener_min_region)
+    right_lb := 7e-6 - damping_region_width + offset * damping_slice_width
+    right_rb := right_lb + damping_slice_width
+
+    coupler_right_lb := 3.5e-6 - damping_region_width + offset * damping_slice_width
+    coupler_right_rb := coupler_right_lb + damping_slice_width
+    right_dampener_region := xrange(right_lb, right_rb).
+        intersect(waveguide)
+
+    left_rb := -7e-6 + damping_region_width - offset * damping_slice_width
+    left_lb := left_rb - damping_slice_width
+
+    coupler_left_rb := -3.5e-6 + damping_region_width - offset * damping_slice_width
+    coupler_left_lb := coupler_left_rb - damping_slice_width
+    left_dampener_region := xrange(left_lb, left_rb).
+        intersect(waveguide)
+
+    dampener_region := right_dampener_region.add(left_dampener_region)
+    DefRegion(i, dampener_region)
+    alpha.SetRegion(i, alpha_max * (1 - exp(-5.0 * (i - dampener_min_region) / (dampener_max_region - dampener_min_region))))
+    Msat.SetRegion(i, 140e3)
+}
+
+Relax()
+Snapshot(Geom)
+Snapshot(alpha)
+Snapshot(Msat)
+Snapshot(Regions)
+
+Save(m)
+AutoSave(m, 50e-12)
+
+DefRegion(excitation_region, xrange(-6.4e-6, -6.3e-6).intersect(waveguide))
+B_ext.SetRegion(excitation_region, Vector(0, 40e-3 * sin(2 * pi * 2.8e9 * t), 200e-3))
+
+Run(160e-9)

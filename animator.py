@@ -6,8 +6,9 @@ from utils import Dimension
 
 FILE_PREFIX = "m"
 INPUT_DIR = './ring-resonator.out'
-FRAME_COUNT = 2001
+FRAME_COUNT = len([name for name in os.listdir(INPUT_DIR) if name.endswith('.npy')])
 DIMENSION = Dimension.X
+DT = 50e-12
 
 # === Precompute color scale ===
 print("Precomputing vabs...")
@@ -20,8 +21,13 @@ for i in range(FRAME_COUNT):
 print(f"Using ±{vabs:.3g} as color range")
 
 # === Setup plot ===
-fig, ax = plt.subplots(figsize=(10, 4))
-img = ax.imshow(np.zeros((1, 1)), cmap='seismic', vmin=-vabs, vmax=vabs, origin='lower', aspect='auto')
+fig, ax = plt.subplots(figsize=(15, 4))
+img = ax.imshow(np.zeros((1, 1)),
+                cmap='seismic',
+                vmin=-vabs,
+                vmax=vabs,
+                origin='lower',
+                aspect='auto')
 cbar = fig.colorbar(img, ax=ax, label='Magnetisation (arb. units)')
 title = ax.set_title("Frame 0")
 ax.set_xlabel("X index")
@@ -29,17 +35,21 @@ ax.set_ylabel("Y index")
 
 # === Update function ===
 def update(frame):
+    # Print progress dynamically
+    print(f"\rProcessing frame {frame+1}/{FRAME_COUNT}", end='', flush=True)
+
     path = os.path.join(INPUT_DIR, f"{FILE_PREFIX}{frame:06d}.npy")
     if not os.path.exists(path):
-        print(f"Missing frame {frame}")
+        print(f"\nMissing frame {frame}")
         return [img]
+
     data = np.load(path)[DIMENSION.value, 0]
     img.set_data(data)
-    title.set_text(f"Frame {frame} — m[{['x', 'y', 'z'][DIMENSION.value]}]")
+    title.set_text(f"Frame {frame} ({frame * DT:.3E} s) — m[{['x', 'y', 'z'][DIMENSION.value]}]")
     return [img]
 
 # === Animate & Save ===
 print("Rendering animation...")
 ani = animation.FuncAnimation(fig, update, frames=FRAME_COUNT, blit=True)
-ani.save("animation.mp4", fps=30, dpi=150)
+ani.save("animation.mp4", fps=120, dpi=150)
 print("Saved as animation.mp4")

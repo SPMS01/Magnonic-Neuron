@@ -68,7 +68,7 @@ for i := dampener_min_region; i <= dampener_max_region; i++ {
 
 // === Coupler LL damping constant ===
 DefRegion(coupler_region, coupler)
-alpha.SetRegion(coupler_region, 2e-2)
+alpha.SetRegion(coupler_region, 0.8)
 
 // === Running the Simulation ===
 
@@ -86,16 +86,8 @@ AutoSave(m, 50e-12)
 // Excitation region
 DefRegion(excitation_region, xrange(-0.5e-6 - damping_region_width - 0.1e-6, -0.5e-6 - damping_region_width).intersect(input_waveguide))
 
-B_ext.SetRegion(excitation_region, Vector(0, 40e-3 * sin(2 * pi * 1.5e9 * t), 200e-3)) // excitation: 0.1 mT at 2.8 GHz, 200 mT in z-direction
+// B_ext.SetRegion(excitation_region, Vector(0, 50e-3 * sin(2 * pi * 2.8e9 * t), 200e-3)) // excitation: 0.1 mT at 2.8 GHz, 200 mT in z-direction
 
-// for i := 0; i < 3; i++ {
-//     B_ext.SetRegion(excitation_region, Vector(0, 0.1e-3 * sin(2 * pi * 2.8e9 * t), 200e-3)) // excitation: 0.1 mT at 2.8 GHz, 200 mT in z-direction
-//     Run(10e-9)
-//     B_ext.SetRegion(excitation_region, Vector(0, 0, 200e-3)) // Turn off excitation, keep 200 mT in z-direction
-//     Run(10e-9)
-//     Print("pulse ", i, " done")
-// }
+// {{ INSERT EXCITATION FIELD HERE }}
 
-// B_ext.SetRegion(excitation_region, Vector(0, 0, 200e-3)) // Turn off excitation, keep 200 mT in z-direction
-
-Run(200e-9)
+Run(400e-9)
