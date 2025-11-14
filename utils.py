@@ -7,7 +7,19 @@ class Dimension(Enum):
     Y = 1
     Z = 2
 
-def generate_mx3(M: np.ndarray, output_path: str, template_path: str, X_OFFSET=100, HEIGHT=50) -> None:
+class DetectorRegionType(Enum):
+    DESIGN = 0
+    POST_COUPLER_OUTPUT = 1
+    PRE_COUPLER_OUTPUT = 2
+    INPUT = 3
+
+class DetectorRegion:
+    def __init__(self, region_type: DetectorRegionType, x_range: tuple, y_range: tuple) -> None:
+        self.region_type = region_type
+        self.x_range = x_range
+        self.y_range = y_range
+
+def generate_mx3_design(M: np.ndarray, output_path: str, template_path: str, X_OFFSET=100, HEIGHT=50) -> None:
     """
     Generate a Mumax3 script from the given magnetisation matrix M.
     
