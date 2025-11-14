@@ -19,7 +19,7 @@ class DetectorRegion:
         self.x_range = x_range
         self.y_range = y_range
 
-def generate_mx3_design(M: np.ndarray, output_path: str, template_path: str, X_OFFSET=100, HEIGHT=50) -> None:
+def generate_mx3_design(M: np.ndarray, output_path: str, template_path: str, x_offset=0, y_offset=0, height=50) -> None:
     """
     Generate a Mumax3 script from the given magnetisation matrix M.
     
@@ -37,8 +37,8 @@ def generate_mx3_design(M: np.ndarray, output_path: str, template_path: str, X_O
     for i in range(M.shape[0]):     # i = y (down in NumPy)
         for j in range(M.shape[1]): # j = x (right in NumPy)
             region = M[i, j]
-            x = X_OFFSET + j
-            y = HEIGHT - 1 - i  # flip vertically for Mumax3
+            x = x_offset + j
+            y = y_offset + height - 1 - i  # flip vertically for Mumax3
             magnetisation += f"DefRegionCell({region}, {x}, {y}, 0)\n"
     
     content = content.replace("// {{ INSERT CELL CODE HERE }}", magnetisation)

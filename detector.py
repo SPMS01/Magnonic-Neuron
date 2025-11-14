@@ -13,6 +13,7 @@ def detect_waves(x_range: tuple,
                  input_dir: str, 
                  frame_count: int, 
                  dt: int, 
+                 detector_name: str = "detector",
                  debug: bool = False) -> np.ndarray:
     x_start, x_end = x_range
     y_start, y_end = y_range
@@ -41,16 +42,16 @@ def detect_waves(x_range: tuple,
 
     if debug:
         # Plot both Mx and My signals
-        plt.figure(figsize=(10, 5))
-        plt.plot(wave_data_x, label='Mx')
-        plt.plot(wave_data_y, label='My')
-        plt.title("Average Magnetisation (X and Y axes) at Detector")
-        plt.xlabel("Frame")
-        plt.ylabel("Magnetisation")
-        plt.legend()
-        plt.grid(True)
-        plt.tight_layout()
-        plt.savefig(os.path.join(input_dir, "../detector_signal_xy.png"))
+        # plt.figure(figsize=(10, 5))
+        # plt.plot(wave_data_x, label='Mx')
+        # plt.plot(wave_data_y, label='My')
+        # plt.title("Average Magnetisation (X and Y axes) at Detector")
+        # plt.xlabel("Frame")
+        # plt.ylabel("Magnetisation")
+        # plt.legend()
+        # plt.grid(True)
+        # plt.tight_layout()
+        # plt.savefig(os.path.join(input_dir, "../detector_signal_xy.png"))
 
         # Also plot the amplitude (optional)
         amplitude = np.sqrt(wave_data_x**2 + wave_data_y**2)
@@ -61,25 +62,25 @@ def detect_waves(x_range: tuple,
         plt.ylabel("Amplitude")
         plt.grid(True)
         plt.tight_layout()
-        plt.savefig(os.path.join(input_dir, "../detector_amplitude.png"))
+        plt.savefig(os.path.join(input_dir, f"../{detector_name}_amplitude.png"))
 
     return wave_data
 
 if __name__ == "__main__":
     # === Sanity check ===
     INPUT_DIR = './ring-resonator.out'
-    end_detector_start = (719, 16)
-    end_detector_end = (720, 31)
+    end_detector_start = (719, 0)
+    end_detector_end = (720, 15)
 
-    start_detector_start = (199, 16)
-    start_detector_end = (200, 31)
+    start_detector_start = (199, 0)
+    start_detector_end = (200, 15)
 
     # Design region is 1um * 1um so i dont set the end
     design_region_x_start = 50
     design_region_y_start = 16
 
-    input_detector_start = (199, 98)
-    input_detector_end = (200, 83)
+    input_detector_start = (199, 67)
+    input_detector_end = (200, 82)
 
     data = np.load(os.path.join(INPUT_DIR, f'm000400.npy'))[Dimension.X.value, 0]
 

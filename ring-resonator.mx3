@@ -1,5 +1,5 @@
 SetCellSize(20e-9, 20e-9, 100e-9) // 20 nm resolution, 100nm thickness (single layer
-SetGridSize(750, 98, 1) // 5um x 1.96um x 100nm simulation area
+SetGridSize(800, 82, 1) 
 B_ext = Vector(0, 0, 200e-3) // 200 mT external magnetic field in z-direction
 Msat = 0 // Default magnetisation saturation
 Aex = 3.5e-12 // Exchange stiffness constant
@@ -20,12 +20,12 @@ Msat.SetRegion(coupler_region, 140e3)
 // === Magnonic Neuron ===
 waveguides_and_ring_translation := 160e-9
 
-input_waveguide := Cuboid(7e-6, 300e-9, 100e-9).Transl(-4e-6, 670e-9 + waveguides_and_ring_translation, 0) // 3um long, 300nm wide, 100nm thick, 20 nm above ring
-output_waveguide := Cuboid(15e-6, 300e-9, 100e-9).Transl(0, -670e-9 + waveguides_and_ring_translation, 0) // 3um long, 300nm wide, 100nm thick, 20 nm below ring
+input_waveguide := Cuboid(7e-6, 300e-9, 100e-9).Transl(-4.5e-6, 670e-9, 0) // 3um long, 300nm wide, 100nm thick, 20 nm above ring
+output_waveguide := Cuboid(16e-6, 300e-9, 100e-9).Transl(0, -670e-9, 0) // 3um long, 300nm wide, 100nm thick, 20 nm below ring
 ring_ext := Cylinder(1e-6, 100e-9).Transl(0, 0, 0) // 1um radius, 100nm thick, centered at (0, 0, 0)
 ring_int := Cylinder(400e-9, 100e-9).Transl(0, 0, 0) // 400nm radius, 100nm thick, centered at (0, 0, 0)
-ring := ring_ext.sub(ring_int).Transl(-4e-6, waveguides_and_ring_translation, 0)
-coupler := Cuboid(8e-6, 300e-9, 100e-9).Transl(0.5e-6, -840e-9, 0) // Coupling region
+ring := ring_ext.sub(ring_int).Transl(-4.5e-6, 0, 0)
+coupler := Cuboid(8e-6, 300e-9, 100e-9).Transl(1e-6, -350e-9, 0) // Coupling region
 
 DefRegion(yig, input_waveguide)
 DefRegion(yig, output_waveguide)
@@ -44,16 +44,16 @@ damping_region_width := (dampener_max_region - dampener_min_region + 1) * dampin
 for i := dampener_min_region; i <= dampener_max_region; i++ {
     offset := (i - dampener_min_region)
 
-    right_lb_input_waveguide := -0.5e-6 - damping_region_width + offset * damping_slice_width
+    right_lb_input_waveguide := -1e-6 - damping_region_width + offset * damping_slice_width
     right_rb_input_waveguide := right_lb_input_waveguide + damping_slice_width
-    right_lb_output_waveguide := 7.5e-6 - damping_region_width + offset * damping_slice_width
+    right_lb_output_waveguide := 8e-6 - damping_region_width + offset * damping_slice_width
     right_rb_output_waveguide := right_lb_output_waveguide + damping_slice_width
     right_dampener_region := xrange(right_lb_input_waveguide, right_rb_input_waveguide).
         intersect(input_waveguide).
         add(xrange(right_lb_output_waveguide, right_rb_output_waveguide).
         intersect(output_waveguide))
 
-    left_rb := -7.5e-6 + damping_region_width - offset * damping_slice_width
+    left_rb := -8e-6 + damping_region_width - offset * damping_slice_width
     left_lb := left_rb - damping_slice_width
     left_dampener_region := xrange(left_lb, left_rb).
         intersect(input_waveguide).
@@ -84,7 +84,7 @@ AutoSave(m, 50e-12)
 
 
 // Excitation region
-DefRegion(excitation_region, xrange(-0.5e-6 - damping_region_width - 0.1e-6, -0.5e-6 - damping_region_width).intersect(input_waveguide))
+DefRegion(excitation_region, xrange(-1e-6 - damping_region_width - 0.1e-6, -1e-6 - damping_region_width).intersect(input_waveguide))
 
 B_ext.SetRegion(excitation_region, Vector(0, 40e-3 * sin(2 * pi * 1.5e9 * t), 200e-3)) // excitation: 0.1 mT at 2.8 GHz, 200 mT in z-direction
 
