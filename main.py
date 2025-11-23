@@ -6,6 +6,7 @@ import os
 import dbs
 import shutil
 
+# Initial random design of YIG and air
 M0 = np.random.choice([0, 1], size=(50, 50))
 
 MX3_EXE_PATH = 'mumax3'
@@ -14,6 +15,7 @@ INPUT_DIR = './ring-resonator.out'
 OUTPUT_DIR = './dbs_output'
 TEMPLATE_PATH = 'ring-resonator-template.mx3'
 
+# Clean output directory
 shutil.rmtree(OUTPUT_DIR, ignore_errors=True)
 os.mkdir(OUTPUT_DIR)
 
@@ -27,6 +29,8 @@ M_output, final_score = dbs.direct_binary_search_decay(
     max_iterations=50,
     tolerance=0.01
 )
+
+print(f"Final score: {final_score:.6g}")
 
 # frame_count = len([name for name in os.listdir(INPUT_DIR) if name.endswith('.npy')])
 

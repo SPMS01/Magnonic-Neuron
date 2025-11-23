@@ -7,12 +7,12 @@ import shutil
 import utils
 import time
 
-def switch_functionality_plotter(input_region: utils.DetectorRegion,
-                                 output_region: utils.DetectorRegion,
-                                 output_dir: str,
-                                 template_path: str,
-                                 dt: float = 50e-12,
-                                 debug: bool = True):
+def plot_switch_functionality(input_region: utils.DetectorRegion,
+                                output_region: utils.DetectorRegion,
+                                output_dir: str,
+                                template_path: str,
+                                dt: float = 50e-12,
+                                debug: bool = True):
     start = time.time()
 
     shutil.rmtree(output_dir, ignore_errors=True)
@@ -82,57 +82,17 @@ def switch_functionality_plotter(input_region: utils.DetectorRegion,
     fields, ratios = zip(*transmission_ratios)
     return fields, ratios
 
-def run_coupler_switch_functionality_plotter():
-    pre_coupler_output_detector_region = utils.DetectorRegion(
-        region_type=utils.DetectorRegionType.PRE_COUPLER_OUTPUT,
-        x_range=(149, 150),
-        y_range=(16, 31)
-    )
+def plot_detector_regions(input_region: utils.DetectorRegion,
+                          output_region: utils.DetectorRegion,
+                          input_dir: str = "./coupler.out"):
+    start_detector_start = (input_region.x_range[0], input_region.y_range[0])
+    start_detector_end = (input_region.x_range[1], input_region.y_range[1])
 
-    post_coupler_output_detector_region = utils.DetectorRegion(
-        region_type=utils.DetectorRegionType.POST_COUPLER_OUTPUT,
-        x_range=(550, 551),
-        y_range=(16, 31)
-    )
+    end_detector_start = (output_region.x_range[0], output_region.y_range[0])
+    end_detector_end = (output_region.x_range[1], output_region.y_range[1])
 
-    region_data: dict[utils.DetectorRegionType, np.ndarray] = {}
-
-    for detector_region in [pre_coupler_output_detector_region, post_coupler_output_detector_region]:
-        x_range = detector_region.x_range
-        y_range = detector_region.y_range
-
-        wave_data = detector.detect_waves(
-            x_range=x_range,
-            y_range=y_range,
-            input_dir="./coupler.out", 
-            frame_count=len([name for name in os.listdir("./coupler.out") if name.endswith('.npy')]),
-            dt=50e-12,
-            debug=True
-        )
-
-        region_data[detector_region.region_type] = wave_data
-
-    Mx_pre = region_data[utils.DetectorRegionType.PRE_COUPLER_OUTPUT][:, 0]
-    My_pre = region_data[utils.DetectorRegionType.PRE_COUPLER_OUTPUT][:, 1]
-    power_pre = Mx_pre**2 + My_pre**2
-    print(f"Average pre-coupler power: {np.mean(power_pre):.6g} a.u.")
-
-    Mx_post = region_data[utils.DetectorRegionType.POST_COUPLER_OUTPUT][:, 0]
-    My_post = region_data[utils.DetectorRegionType.POST_COUPLER_OUTPUT][:, 1]
-    power_post = Mx_post**2 + My_post**2
-    print(f"Average post-coupler power: {np.mean(power_post):.6g} a.u.")
-
-    transmission_ratio = np.mean(power_post) / np.mean(power_pre)
-    print(f"Transmission Percentage (Post/Pre): {transmission_ratio*100:.6g}%")
-
-    start_detector_start = (149, 16)
-    start_detector_end = (150, 31)
-
-    end_detector_start = (550, 16)
-    end_detector_end = (551, 31)
-
-    data = np.load(os.path.join('./coupler.out', f'm000400.npy'))[utils.Dimension.X.value, 0]
-
+    data = np.load(os.path.join(input_dir, f'm000800.npy'))[utils.Dimension.X.value, 0]
+    
     # === PLOT ===
     plt.figure(figsize=(10, 4))
     vabs = np.max(np.abs(data))
@@ -156,51 +116,43 @@ def run_coupler_switch_functionality_plotter():
     plt.xlabel('X index')
     plt.ylabel('Y index')
     plt.tight_layout()
-    plt.show()
-
-    pass
+    plt.savefig('switch_functionality_detector_regions.png', dpi=300)
 
 if __name__ == "__main__":
-    OUTPUT_DIR = "./switch_functionality_results"
+    OUTPUT_DIR = "./ring_switch_functionality_results"
 
-    pre_coupler_output_detector_region = utils.DetectorRegion(
+    pre_neuron_input_region = utils.DetectorRegion(
         region_type=utils.DetectorRegionType.PRE_COUPLER_OUTPUT,
-        x_range=(149, 150),
-        y_range=(16, 31)
+        x_range=(200, 201),
+        y_range=(67, 82)
     )
 
-    post_coupler_output_detector_region = utils.DetectorRegion(
+    post_neuron_output_region = utils.DetectorRegion(
         region_type=utils.DetectorRegionType.POST_COUPLER_OUTPUT,
-        x_range=(550, 551),
-        y_range=(16, 31)
+        x_range=(650, 651),
+        y_range=(0, 15)
     )
-
-    # pre_coupler_output_detector_region = utils.DetectorRegion(
-    #     region_type=utils.DetectorRegionType.PRE_COUPLER_OUTPUT,
-    #     x_range=(149, 150),
-    #     y_range=(0, 15)
-    # )
-
-    # post_coupler_output_detector_region = utils.DetectorRegion(
-    #     region_type=utils.DetectorRegionType.POST_COUPLER_OUTPUT,
-    #     x_range=(550, 551),
-    #     y_range=(0, 15)
-    # )
-
-    fields, ratios = switch_functionality_plotter(
-        input_region=pre_coupler_output_detector_region,
-        output_region=post_coupler_output_detector_region,
+    
+    fields, ratios = plot_switch_functionality(
+        input_region=pre_neuron_input_region,
+        output_region=post_neuron_output_region,
         output_dir=OUTPUT_DIR,
-        template_path='./coupler_switch_functionality_template.mx3',
+        template_path="ring-resonator-template.mx3",
         dt=50e-12,
-        debug=False
+        debug=True
     )
 
-    plt.figure(figsize=(8, 6))
-    plt.plot(fields, ratios, marker='o')
-    plt.title('Switch Functionality: Transmission Ratio vs External Magnetic Field')
-    plt.xlabel('External Magnetic Field B_ext (mT)')
-    plt.ylabel('Transmission Ratio (Post-Coupler / Pre-Coupler)')
+    # plot the results
+    plt.figure()
+    plt.plot(fields, np.array(ratios) * 100, marker='o')
+    plt.xlabel('External Magnetic Field Amplitude (mT)')
+    plt.ylabel('Transmission Percentage (%)')
+    plt.title('Switch Functionality: Transmission vs External Field')
     plt.grid(True)
-    plt.tight_layout()
-    plt.savefig(os.path.join(OUTPUT_DIR, 'switch_functionality_plot.png'))
+    plt.savefig(os.path.join(OUTPUT_DIR, 'switch_functionality_plot.png'), dpi=300)
+
+    # plot_detector_regions(
+    #     input_region=pre_neuron_input_region,
+    #     output_region=post_coupler_output_detector_region,
+    #     input_dir="./ring-resonator.out"
+    # )

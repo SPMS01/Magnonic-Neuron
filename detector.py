@@ -2,7 +2,6 @@ from utils import Dimension
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-
 import numpy as np
 import os
 import matplotlib.pyplot as plt
@@ -15,6 +14,21 @@ def detect_waves(x_range: tuple,
                  dt: int, 
                  detector_name: str = "detector",
                  debug: bool = False) -> np.ndarray:
+    """
+    Grab spin wave data from a specified detector region over time.
+    
+    Args:
+        x_range (tuple): The range of x-coordinates (start, end) for the detector region.
+        y_range (tuple): The range of y-coordinates (start, end) for the detector region.
+        input_dir (str): Directory containing the simulation output files (in numpy format).
+        frame_count (int): Number of frames in the simulation output.
+        dt (int): Time step between frames.
+        detector_name (str): Name of the detector (used for saving debug plots).
+        debug (bool): If True, generate debug plots.
+
+    Returns:
+        np.ndarray: Array of shape (frame_count, 2) containing average Mx and My values over time.
+    """
     x_start, x_end = x_range
     y_start, y_end = y_range
     wave_data_x = []

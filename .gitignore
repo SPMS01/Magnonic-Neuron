@@ -1,6 +1,8 @@
 *.out
 *.png
 *.mp4
+*.mx3
+*.csv
 
 __pycache__
 switch_functionality_results

@@ -22,6 +22,16 @@ def evaluate_objective(detector_regions: list[utils.DetectorRegion],
                        frame_count: int, 
                        dt: int, 
                        debug: bool = False):
+    """
+    The objective function just evaluates how well the design does; you can set it as whatever you want
+
+    Args:
+        detector_regions (list[utils.DetectorRegion]): List of detector regions to evaluate. Since its a list you can just add as many regions as you want and reference them in this function. Just make sure you actually pass them in.
+        input_dir (str): Directory containing the simulation output files (in numpy format).
+        frame_count (int): Number of frames in the simulation output.
+        dt (int): Time step between frames.
+        debug (bool): If True, print debug information and plot signals.
+    """
     region_data: dict[utils.DetectorRegionType, np.ndarray] = {}
 
     for detector_region in detector_regions:
@@ -42,6 +52,11 @@ def evaluate_objective(detector_regions: list[utils.DetectorRegion],
 
     Mx_post_coupler = region_data[utils.DetectorRegionType.POST_COUPLER_OUTPUT][:, 0]
     My_post_coupler = region_data[utils.DetectorRegionType.POST_COUPLER_OUTPUT][:, 1]
+    """
+    Since the goal (so far) is just to maximise energy output over time, we just need to sum up the total energy over time.
+    A = sqrt(Ax^2 + Ay^2)
+    => E ∝ A^2 => E ∝ Ax^2 + Ay^2
+    """
     total_energy = np.sum(Mx_post_coupler**2 + My_post_coupler**2)
 
     if debug:
