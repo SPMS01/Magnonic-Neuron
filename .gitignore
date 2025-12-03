@@ -3,6 +3,7 @@
 *.mp4
 *.mx3
 *.csv
+*.svg
 
 __pycache__
 switch_functionality_results

@@ -20,8 +20,8 @@ Msat.SetRegion(coupler_region, 140e3)
 alpha.SetRegion(coupler_region, 2e-2)
 
 // === Waveguide ===
-waveguide := Cuboid(14e-6, 300e-9, 100e-9).Transl(0, 160e-9, 0)
-coupler := Cuboid(7e-6, 300e-9, 100e-9).Transl(0, -160e-9, 0)
+coupler := Cuboid(8e-6, 300e-9, 100e-9).Transl(0, 160e-9, 0)
+waveguide := Cuboid(14e-6, 300e-9, 100e-9).Transl(0, -160e-9, 0)
 
 system := waveguide.add(coupler)
 // system := waveguide
@@ -66,8 +66,8 @@ Snapshot(alpha)
 Snapshot(Msat)
 Snapshot(Regions)
 
-Save(m)
-AutoSave(m, 50e-12)
+Save(m_full)
+AutoSave(m_full, 50e-12)
 
 DefRegion(excitation_region, xrange(-6.4e-6, -6.3e-6).intersect(waveguide))
 // B_ext.SetRegion(excitation_region, Vector(0, 10e-3 * sin(2 * pi * 2.8e9 * t), 200e-3))

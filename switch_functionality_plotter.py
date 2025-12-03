@@ -6,8 +6,9 @@ import matplotlib.pyplot as plt
 import shutil
 import utils
 import time
+import matplotlib
 
-def plot_switch_functionality(input_region: utils.DetectorRegion,
+def calculate_switch_functionality(input_region: utils.DetectorRegion,
                                 output_region: utils.DetectorRegion,
                                 output_dir: str,
                                 template_path: str,
@@ -91,7 +92,7 @@ def plot_detector_regions(input_region: utils.DetectorRegion,
     end_detector_start = (output_region.x_range[0], output_region.y_range[0])
     end_detector_end = (output_region.x_range[1], output_region.y_range[1])
 
-    data = np.load(os.path.join(input_dir, f'm000800.npy'))[utils.Dimension.X.value, 0]
+    data = np.load(os.path.join(input_dir, f'm001000.npy'))[utils.Dimension.X.value, 0]
     
     # === PLOT ===
     plt.figure(figsize=(10, 4))
@@ -119,40 +120,74 @@ def plot_detector_regions(input_region: utils.DetectorRegion,
     plt.savefig('switch_functionality_detector_regions.png', dpi=300)
 
 if __name__ == "__main__":
-    OUTPUT_DIR = "./ring_switch_functionality_results"
+    OUTPUT_DIR = "./coupler_functionality_results"
+    TEMPLATE_PATH = "coupler_switch_functionality_template.mx3"
 
-    pre_neuron_input_region = utils.DetectorRegion(
+    # for neuron switch functionality
+    # pre_neuron_input_region = utils.DetectorRegion(
+    #     region_type=utils.DetectorRegionType.PRE_COUPLER_OUTPUT,
+    #     x_range=(200, 201),
+    #     y_range=(67, 82)
+    # )
+
+    # post_neuron_output_region = utils.DetectorRegion(
+    #     region_type=utils.DetectorRegionType.POST_COUPLER_OUTPUT,
+    #     x_range=(650, 651),
+    #     y_range=(0, 15)
+    # )
+
+    # for coupler switch functionality
+    pre_coupler_input_region = utils.DetectorRegion(
         region_type=utils.DetectorRegionType.PRE_COUPLER_OUTPUT,
-        x_range=(200, 201),
-        y_range=(67, 82)
+        x_range=(149, 150),
+        y_range=(0, 15)
     )
 
-    post_neuron_output_region = utils.DetectorRegion(
+    post_coupler_output_region = utils.DetectorRegion(
         region_type=utils.DetectorRegionType.POST_COUPLER_OUTPUT,
-        x_range=(650, 651),
+        x_range=(550, 551),
         y_range=(0, 15)
     )
     
-    fields, ratios = plot_switch_functionality(
-        input_region=pre_neuron_input_region,
-        output_region=post_neuron_output_region,
-        output_dir=OUTPUT_DIR,
-        template_path="ring-resonator-template.mx3",
-        dt=50e-12,
-        debug=True
-    )
+    # fields, ratios = calculate_switch_functionality(
+    #     input_region=pre_coupler_input_region,
+    #     output_region=post_coupler_output_region,
+    #     output_dir=OUTPUT_DIR,
+    #     template_path=TEMPLATE_PATH,
+    #     dt=50e-12,
+    #     debug=True
+    # )
 
     # plot the results
+    with open(os.path.join(OUTPUT_DIR, 'transmission_ratios.csv'), 'r') as f:
+        lines = f.readlines()
+        fields = []
+        ratios = []
+        for line in lines:
+            field, ratio = line.strip().split(',')
+            fields.append(float(field))
+            ratios.append(float(ratio))
+
+    matplotlib.rcParams["mathtext.fontset"] = "stix"
+    plt.rcParams["font.family"] = "serif"
+    plt.rcParams["font.serif"] = "Times New Roman"
+
+    ax = plt.gca()
+    for spine in ax.spines.values():
+        spine.set_linewidth(1.5)
+    ax.tick_params(width=1.5, length=6)
+
     plt.figure()
-    plt.plot(fields, np.array(ratios) * 100, marker='o')
-    plt.xlabel('External Magnetic Field Amplitude (mT)')
-    plt.ylabel('Transmission Percentage (%)')
-    plt.title('Switch Functionality: Transmission vs External Field')
-    plt.grid(True)
-    plt.savefig(os.path.join(OUTPUT_DIR, 'switch_functionality_plot.png'), dpi=300)
+    plt.plot(fields, np.array(ratios) * 100, marker='o', color='black')
+    plt.xlabel(r"$b_0 \ \mathrm{(mT)}$", fontsize=20)
+    plt.ylabel(r"$P_{\mathrm{output}} \ / \ P_{\mathrm{input}} \ \mathrm{(\%)}$", fontsize=20)
+    plt.tick_params(labelsize=16)
+    plt.grid(False)
+    plt.tight_layout()
+    plt.savefig(os.path.join(OUTPUT_DIR, 'switch_functionality_plot.svg'), dpi=300)
 
     # plot_detector_regions(
-    #     input_region=pre_neuron_input_region,
-    #     output_region=post_coupler_output_detector_region,
-    #     input_dir="./ring-resonator.out"
+    #     input_region=pre_coupler_input_region,
+    #     output_region=post_coupler_output_region,
+    #     input_dir="./coupler.out"
     # )
