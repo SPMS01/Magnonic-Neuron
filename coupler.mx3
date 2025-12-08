@@ -66,10 +66,11 @@ Snapshot(alpha)
 Snapshot(Msat)
 Snapshot(Regions)
 
-Save(m_full)
-AutoSave(m_full, 50e-12)
+Save(m)
+AutoSave(m, 50e-12)
 
-DefRegion(excitation_region, xrange(-6.4e-6, -6.3e-6).intersect(waveguide))
-B_ext.SetRegion(excitation_region, Vector(0, 40e-3 * sin(2 * pi * 2.8e9 * t), 200e-3))
+DefRegion(excitation_region, xrange(-5.1e-6, -5.0e-6).intersect(waveguide))
+B_ext.SetRegion(excitation_region, Vector(0, 120e-3 * sin(2 * pi * 2.8e9 * t), 200e-3))
+// B_ext.SetRegion(excitation_region, Vector(0, 60e-3 * sinc(2 * pi * 5e9 * (t-3e-9)), 200e-3))
 
 Run(160e-9)

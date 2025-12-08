@@ -5,7 +5,7 @@ import os
 from utils import Dimension
 
 FILE_PREFIX = "m"
-INPUT_DIR = './ring-resonator.out'
+INPUT_DIR = './coupler.out'
 FRAME_COUNT = len([name for name in os.listdir(INPUT_DIR) if name.endswith('.npy')])
 DIMENSION = Dimension.X
 DT = 50e-12

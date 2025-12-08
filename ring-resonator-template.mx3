@@ -82,8 +82,8 @@ Snapshot(Geom)
 Snapshot(alpha)
 Snapshot(Msat)
 
-Save(m_full)
-AutoSave(m_full, 50e-12)
+Save(m)
+AutoSave(m, 50e-12)
 
 
 // Excitation region

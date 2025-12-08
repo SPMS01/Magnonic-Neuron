@@ -8,6 +8,8 @@ import utils
 import time
 import matplotlib
 
+F0 = 2.48e9  # Target frequency in Hz
+
 def calculate_switch_functionality(input_region: utils.DetectorRegion,
                                 output_region: utils.DetectorRegion,
                                 output_dir: str,
@@ -22,7 +24,7 @@ def calculate_switch_functionality(input_region: utils.DetectorRegion,
     transmission_ratios = []
 
     for i in range(3, 63, 3):
-        line = f'B_ext.SetRegion(excitation_region, Vector(0, {i}e-3 * sin(2 * pi * 1.5e9 * t), 200e-3))'
+        line = f'B_ext.SetRegion(excitation_region, Vector(0, {i}e-3 * sin(2 * pi * {F0} * t), 200e-3))'
 
         with open(template_path, 'r') as template_file:
             content = template_file.read()
@@ -57,16 +59,40 @@ def calculate_switch_functionality(input_region: utils.DetectorRegion,
 
         Mx_pre = region_data[utils.DetectorRegionType.PRE_COUPLER_OUTPUT][:, 0]
         My_pre = region_data[utils.DetectorRegionType.PRE_COUPLER_OUTPUT][:, 1]
-        power_pre = Mx_pre**2 + My_pre**2
-        print(f"Average pre-coupler power: {np.mean(power_pre):.6g} a.u.")
+        Yx_pre = np.fft.rfft(Mx_pre - np.mean(Mx_pre))
+        Yy_pre = np.fft.rfft(My_pre - np.mean(My_pre))
+        # get power at f0 +- 100 MHz
+        freq_axis = np.fft.rfftfreq(len(Mx_pre), dt)
+        freq_mask_pre = (freq_axis >= F0 - 1e8) & (freq_axis <= F0 + 1e8)
+        power_pre = np.abs(Yx_pre[freq_mask_pre])**2 + np.abs(Yy_pre[freq_mask_pre])**2
+        power_pre = np.sum(power_pre)
+        print(f"Input region power around {F0*1e-9:.2f} GHz: {power_pre:.6g} a.u.")
 
         Mx_post = region_data[utils.DetectorRegionType.POST_COUPLER_OUTPUT][:, 0]
         My_post = region_data[utils.DetectorRegionType.POST_COUPLER_OUTPUT][:, 1]
-        power_post = Mx_post**2 + My_post**2
-        print(f"Average post-coupler power: {np.mean(power_post):.6g} a.u.")
+        Yx_post = np.fft.rfft(Mx_post - np.mean(Mx_post))
+        Yy_post = np.fft.rfft(My_post - np.mean(My_post))
+        # get power at f0 +- 100 MHz
+        freq_mask_post = (freq_axis >= F0 - 1e8) & (freq_axis <= F0 + 1e8)
+        power_post = np.abs(Yx_post[freq_mask_post])**2 + np.abs(Yy_post[freq_mask_post])**2
+        power_post = np.sum(power_post)
+        print(f"Output region power around {F0*1e-9:.2f} GHz: {power_post:.6g} a.u.")
 
-        transmission_ratio = np.mean(power_post) / np.mean(power_pre)
-        print(f"Transmission Percentage (Post/Pre): {transmission_ratio*100:.6g}%")
+        transmission_ratio = power_post / power_pre if power_pre > 0 else 0
+        print(f"Transmission Ratio (Output/Input) around {F0*1e-9:.2f} GHz: {transmission_ratio:.6g}")
+
+        # Mx_pre = region_data[utils.DetectorRegionType.PRE_COUPLER_OUTPUT][:, 0]
+        # My_pre = region_data[utils.DetectorRegionType.PRE_COUPLER_OUTPUT][:, 1]
+        # power_pre = Mx_pre**2 + My_pre**2
+        # print(f"Average pre-coupler power: {np.mean(power_pre):.6g} a.u.")
+
+        # Mx_post = region_data[utils.DetectorRegionType.POST_COUPLER_OUTPUT][:, 0]
+        # My_post = region_data[utils.DetectorRegionType.POST_COUPLER_OUTPUT][:, 1]
+        # power_post = Mx_post**2 + My_post**2
+        # print(f"Average post-coupler power: {np.mean(power_post):.6g} a.u.")
+
+        # transmission_ratio = np.mean(power_post) / np.mean(power_pre)
+        # print(f"Transmission Percentage (Post/Pre): {transmission_ratio*100:.6g}%")
 
         transmission_ratios.append((i, transmission_ratio))
 
@@ -120,7 +146,7 @@ def plot_detector_regions(input_region: utils.DetectorRegion,
     plt.savefig('switch_functionality_detector_regions.png', dpi=300)
 
 if __name__ == "__main__":
-    OUTPUT_DIR = "./coupler_functionality_results"
+    OUTPUT_DIR = "./coupler_functionality_results_1.5GHz_fft"
     TEMPLATE_PATH = "coupler_switch_functionality_template.mx3"
 
     # for neuron switch functionality
@@ -149,14 +175,14 @@ if __name__ == "__main__":
         y_range=(0, 15)
     )
     
-    # fields, ratios = calculate_switch_functionality(
-    #     input_region=pre_coupler_input_region,
-    #     output_region=post_coupler_output_region,
-    #     output_dir=OUTPUT_DIR,
-    #     template_path=TEMPLATE_PATH,
-    #     dt=50e-12,
-    #     debug=True
-    # )
+    fields, ratios = calculate_switch_functionality(
+        input_region=pre_coupler_input_region,
+        output_region=post_coupler_output_region,
+        output_dir=OUTPUT_DIR,
+        template_path=TEMPLATE_PATH,
+        dt=50e-12,
+        debug=True
+    )
 
     # plot the results
     with open(os.path.join(OUTPUT_DIR, 'transmission_ratios.csv'), 'r') as f:

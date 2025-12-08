@@ -68,11 +68,12 @@ def detect_waves(x_range: tuple,
         # plt.savefig(os.path.join(input_dir, "../detector_signal_xy.png"))
 
         # Also plot the amplitude (optional)
+        # make the x axis in ns
         amplitude = np.sqrt(wave_data_x**2 + wave_data_y**2)
         plt.figure(figsize=(10, 5))
-        plt.plot(amplitude, color='purple')
+        plt.plot(np.arange(len(amplitude)) * dt / 1e-9, amplitude, color='purple')
         plt.title("Transverse Magnetisation Amplitude |M⊥|")
-        plt.xlabel("Frame")
+        plt.xlabel("Time (ns)")
         plt.ylabel("Amplitude")
         plt.grid(True)
         plt.tight_layout()

@@ -7,7 +7,14 @@ import dbs
 import shutil
 
 # Initial random design of YIG and air
-M0 = np.random.choice([0, 1], size=(50, 50))
+# M0 = np.random.choice([0, 1], size=(50, 50))
+
+N = 50
+y, x = np.indices((N, N))
+cx = cy = (N - 1) / 2
+outer_r, inner_r = 25, 10
+dist = np.sqrt((x - cx)**2 + (y - cy)**2)
+M0 = ((dist <= outer_r) & (dist >= inner_r)).astype(np.uint8)
 
 MX3_EXE_PATH = 'mumax3'
 MX3_EXE_CONVERT_PATH = 'mumax3-convert'
