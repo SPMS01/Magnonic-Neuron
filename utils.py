@@ -1,6 +1,8 @@
 import subprocess
 from enum import Enum
 import numpy as np
+import matplotlib.pyplot as plt
+import scipy
 
 class Dimension(Enum):
     X = 0
@@ -12,6 +14,8 @@ class DetectorRegionType(Enum):
     POST_COUPLER_OUTPUT = 1
     PRE_COUPLER_OUTPUT = 2
     INPUT = 3
+    RING_WAVEGUIDE_INTERSECTION_OUTPUT = 4
+    EXCITATION_REGION = 5
 
 class DetectorRegion:
     def __init__(self, region_type: DetectorRegionType, x_range: tuple, y_range: tuple) -> None:
@@ -80,3 +84,101 @@ def run_mx3(mx3_exe_path: str, mx3_exe_convert_path: str, mx3_file_path: str, ou
         'convert_stderr': mx3_convert_result.stderr if mx3_convert_result else '',
         'convert_returncode': mx3_convert_result.returncode if mx3_convert_result else -1
     }
+
+def plot_signal(time_axis: np.ndarray, signal: np.ndarray, title: str, ylabel: str, filename: str):
+    plt.figure(figsize=(10, 5))
+    plt.plot(time_axis * 1e9, signal, label=ylabel)
+    plt.title(title)
+    plt.xlabel('Time (ns)')
+    plt.ylabel(ylabel)
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(filename)
+    plt.close()
+
+def extract_vector_frequency_amplitude(mx: np.ndarray, my: np.ndarray, dt: float, f0: float, window: float=10e-9):
+    """
+    Extract instantaneous amplitude and relative phase of a given frequency
+    component from two transverse components mx(t), my(t).
+
+    Parameters
+    ----------
+    mx, my : np.ndarray
+        Real-valued time series arrays for m_x(t) and m_y(t).
+    dt : float
+        Time step between samples in seconds.
+    f0 : float
+        Target frequency in Hz (e.g. 1.5e9).
+    window : float
+        Width (s) of moving-average low-pass filter used on the baseband.
+        Larger -> smoother envelope.
+    """
+
+    assert len(mx) == len(my), "Input signals must have the same length."
+    t = np.arange(len(mx)) * dt
+
+    # Form the complex vector signal and remove its DC component
+    m_complex = (mx - np.mean(mx)) + 1j * (my - np.mean(my))
+
+    # demodulate to baseband
+    exp = np.exp(-1j * 2 * np.pi * f0 * t)
+    m_bb = m_complex * exp
+
+    # moving-average low-pass filter
+    sigma_samples = (window / dt) / 6
+    if sigma_samples < 1:
+        sigma_samples = 1
+
+    m_bb_filtered = scipy.ndimage.gaussian_filter1d(m_bb, sigma=sigma_samples, mode='nearest')
+    m_bb_filtered *= 2
+
+    amplitude = np.abs(m_bb_filtered)
+    phase = np.angle(m_bb_filtered)
+
+    return amplitude, phase, m_bb_filtered
+
+def plot_detector_regions(reference_frame: str, regions: list[DetectorRegion], output_path: str):
+    data = np.load(reference_frame)[Dimension.X.value, 0]  # x-component
+    
+    plt.figure(figsize=(10, 4))
+    vabs = np.max(np.abs(data))
+    plt.imshow(data, cmap='seismic', vmin=-vabs, vmax=vabs, origin='lower')
+    plt.colorbar(label='Magnetisation (arb. units)')
+    plt.title(f'm[{["x", "y", "z"][0]}]')
+
+    for region in regions:
+        rect = plt.Rectangle(
+            (region.x_range[0], region.y_range[0]),
+            region.x_range[1] - region.x_range[0],
+            region.y_range[1] - region.y_range[0],
+            linewidth=0.5, edgecolor='lime', facecolor='none'
+        )
+        plt.gca().add_patch(rect)
+        plt.text(
+            region.x_range[0],
+            region.y_range[1] + 1,
+            region.region_type.name,
+            color='lime',
+            fontsize=8,
+            verticalalignment='bottom',
+            horizontalalignment='left',
+            weight='bold'
+        )
+
+    plt.tight_layout()
+    plt.savefig(output_path)
+    plt.close()
+
+    # # detector region
+    # rect = plt.Rectangle(
+    #     (region.x_range[0], region.y_range[0]),
+    #     region.x_range[1] - region.x_range[0],
+    #     region.y_range[1] - region.y_range[0],
+    #     linewidth=2, edgecolor='lime', facecolor='none'
+    # )
+    # plt.gca().add_patch(rect)
+
+    # plt.tight_layout()
+    # plt.savefig(output_path)
+    # plt.close()

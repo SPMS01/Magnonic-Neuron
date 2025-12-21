@@ -12,7 +12,7 @@ import shutil
 N = 50
 y, x = np.indices((N, N))
 cx = cy = (N - 1) / 2
-outer_r, inner_r = 25, 10
+outer_r, inner_r = 25, 20
 dist = np.sqrt((x - cx)**2 + (y - cy)**2)
 M0 = ((dist <= outer_r) & (dist >= inner_r)).astype(np.uint8)
 
@@ -20,7 +20,7 @@ MX3_EXE_PATH = 'mumax3'
 MX3_EXE_CONVERT_PATH = 'mumax3-convert'
 INPUT_DIR = './ring-resonator.out'
 OUTPUT_DIR = './dbs_output'
-TEMPLATE_PATH = 'ring-resonator-template.mx3'
+TEMPLATE_PATH = 'resonator_template.mx3'
 
 # Clean output directory
 shutil.rmtree(OUTPUT_DIR, ignore_errors=True)

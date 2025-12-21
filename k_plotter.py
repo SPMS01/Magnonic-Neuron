@@ -1,72 +1,57 @@
+import os, glob
 import numpy as np
-import os
 import matplotlib.pyplot as plt
+import utils
 
-def spatial_fft_1d(y_line, dx, label):
-    N = len(y_line)
-    windowed = y_line * np.hanning(N)       # optional Hanning window
-    Y = np.fft.rfft(windowed)
-    freqs = np.fft.rfftfreq(N, d=dx)       # cycles/m
-    k_vals = 2 * np.pi * freqs             # rad/m
-    mag = np.abs(Y)
+prefix = "paper_coupler" # was paper_coupler
+postfix = "sinc" # typically {f}GHz_{m}mT
 
-    # Skip DC for peak detection
-    idx_peak = np.argmax(mag[1:]) + 1
-    idx_peak2 = np.argsort(mag[1:])[-2] + 1
+INPUT_DIR = "paper_coupler_7.05GHz_50mT.out"
+DT = 50e-12
+Y_SLICE = 3
+X_RANGE = (600, 3600)
 
-    k_peak = k_vals[idx_peak]
-    k_peak2 = k_vals[idx_peak2]
+x_t = []
 
-    print(f"{label}: dominant k = {k_peak:.2e} rad/m")
-    print(f"{label}: second dominant k = {k_peak2:.2e} rad/m")
-    print(f"{label}: delta k = {abs(k_peak - k_peak2):.2e} rad/m")
+for i in range(len([name for name in os.listdir(INPUT_DIR) if name.endswith('.npy')])):
+    # x magnetisation, layer 0 for z (1 layer), singular y slice, x range
+    data = np.load(os.path.join(INPUT_DIR, f'm_full{i:06d}.npy'))[utils.Dimension.X.value, 0, Y_SLICE:Y_SLICE+1, X_RANGE[0]:X_RANGE[1]][0]
+    x_t.append(data)
 
-    # Plot
-    plt.figure(figsize=(6,3))
-    plt.plot(k_vals, mag, label='FFT magnitude')
-    plt.plot(k_vals[idx_peak], mag[idx_peak], 'ro', label='Dominant k')
-    plt.plot(k_vals[idx_peak2], mag[idx_peak2], 'go', label='Second Dominant k')
-    plt.title(f"Spatial FFT ({label})")
-    plt.xlabel("k (rad/m)")
-    plt.ylabel("Magnitude")
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig(f"spatial_fft_{label}.png")
-    plt.close()  # closes figure to avoid overlapping plots in loops
+x_t = np.array(x_t) # (Nt, Nx)
 
-    return k_peak
+# remove dc component
+s = x_t.copy()
+s = s - s.mean(axis=0, keepdims=True)
 
+# windowing
+Nt, Nx = s.shape
+wt = np.hanning(Nt)[:, None]
+wx = np.hanning(Nx)[None, :]
+sw = s * wt * wx
 
-INPUT_DIR = "./coupler.out"
-DX = 20e-9
-waveguide_start = ()
-waveguide_end = ()
-coupler_start = ()
-coupler_end = ()
+# 2d fft -> f-k
+S = np.fft.fftshift(np.fft.fft2(sw))
+I = np.abs(S)**2
 
-data = np.load(os.path.join(INPUT_DIR, f'm000800.npy'))[0, 0] # x-component
+# axes
+dx = 20e-9
+f = np.fft.fftshift(np.fft.fftfreq(Nt, d=DT)) / 1e9 # GHz
+k = (np.fft.fftshift(np.fft.fftfreq(Nx, d=dx)) * 2*np.pi) / 1e6  # rad/µm
 
-waveguide_line = np.mean(data[23:25, :], axis=0)
+# keep positive frequencies for plotting
+mask = f > 0
+f_pos = f[mask]
+I_pos = I[mask, :]
 
-k_waveguide = spatial_fft_1d(waveguide_line, DX, "Waveguide")
-
-# === PLOT ===
-plt.figure(figsize=(10, 4))
-vabs = np.max(np.abs(data))
-plt.imshow(data, cmap='seismic', vmin=-vabs, vmax=vabs, origin='lower')
-plt.colorbar(label='Magnetisation (arb. units)')
-plt.title(f'm[{["x", "y", "z"][0]}]')
-
-# waveguide detection zone
-plt.hlines(23.5, xmin=180, xmax=520, color='lime', linestyle='--') 
-plt.text(180, 30, 'Waveguide Detection Zone', color='lime')
-
-# coupler detection zone
-# plt.hlines(7.5, xmin=180, xmax=520, color='red', linestyle='--')
-# plt.text(180, -10, 'Coupler Detection Zone', color='red')
-
-plt.xlabel('X index')
-plt.ylabel('Y index')
+plt.figure(figsize=(7,4))
+plt.pcolormesh(k, f_pos, np.log10(I_pos + 1e-30), shading="auto", cmap="inferno")
+plt.xlabel("k (rad/µm)") # Labeled correctly now
+plt.ylabel("f (GHz)")
+plt.ylim(5.5, 8) # (5.5, 7.5)
+plt.xlim(-45, 0) # (-30, 0)
+plt.title("2D spectral map (Fig 1c-style)")
+plt.colorbar(label="log10 intensity")
 plt.tight_layout()
-# plt.show()
-plt.savefig("k_sanity_plot.png")
+plt.savefig(f"brrbrr.png") #paper_f-k_plot_{postfix}.png
+plt.close()

@@ -1,8 +1,8 @@
 SetCellSize(20e-9, 20e-9, 100e-9) // 20 nm resolution, 100nm thickness (single layer
 SetGridSize(700, 31, 1)
-B_ext = Vector(0, 0, 200e-3) // 200 mT external magnetic field in z-direction
+B_ext = Vector(0, 0, 300e-3) // 200 mT external magnetic field in z-direction
 Msat = 0 // Default magnetisation saturation
-Aex = 3.5e-12 // Exchange stiffness constant
+Aex = 0 // Exchange stiffness constant
 alpha = 2e-4 // LL damping constant
 
 // === Regions ===
@@ -17,7 +17,11 @@ Msat.SetRegion(yig, 140e3)
 Msat.SetRegion(excitation_region, 140e3)
 Msat.SetRegion(coupler_region, 140e3)
 
-alpha.SetRegion(coupler_region, 2e-1)
+Aex.SetRegion(yig, 3.5e-12)
+Aex.SetRegion(excitation_region, 3.5e-12)
+Aex.SetRegion(coupler_region, 3.5e-12)
+
+alpha.SetRegion(coupler_region, 2e-2)
 
 // === Waveguide ===
 coupler := Cuboid(8e-6, 300e-9, 100e-9).Transl(0, 160e-9, 0)
@@ -58,6 +62,7 @@ for i := dampener_min_region; i <= dampener_max_region; i++ {
     DefRegion(i, dampener_region)
     alpha.SetRegion(i, alpha_max * (1 - exp(-5.0 * (i - dampener_min_region) / (dampener_max_region - dampener_min_region))))
     Msat.SetRegion(i, 140e3)
+    Aex.SetRegion(i, 3.5e-12)
 }
 
 Relax()
@@ -65,9 +70,10 @@ Snapshot(Geom)
 Snapshot(alpha)
 Snapshot(Msat)
 Snapshot(Regions)
+Snapshot(Aex)
 
-Save(m)
-AutoSave(m, 50e-12)
+Save(m_full)
+AutoSave(m_full, 50e-12)
 
 DefRegion(excitation_region, xrange(-6.4e-6, -6.3e-6).intersect(waveguide))
 // B_ext.SetRegion(excitation_region, Vector(0, 10e-3 * sin(2 * pi * 2.8e9 * t), 200e-3))

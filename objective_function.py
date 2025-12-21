@@ -4,60 +4,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import hilbert, find_peaks, peak_widths, savgol_filter, butter, filtfilt
 import os
-import scipy
-
-def extract_vector_frequency_amplitude(mx: np.ndarray, my: np.ndarray, dt: float, f0: float, window: float=10e-9):
-    """
-    Extract instantaneous amplitude and relative phase of a given frequency
-    component from two transverse components mx(t), my(t).
-
-    Parameters
-    ----------
-    mx, my : np.ndarray
-        Real-valued time series arrays for m_x(t) and m_y(t).
-    dt : float
-        Time step between samples in seconds.
-    f0 : float
-        Target frequency in Hz (e.g. 1.5e9).
-    window : float
-        Width (s) of moving-average low-pass filter used on the baseband.
-        Larger -> smoother envelope.
-    """
-
-    assert len(mx) == len(my), "Input signals must have the same length."
-    t = np.arange(len(mx)) * dt
-
-    # Form the complex vector signal and remove its DC component
-    m_complex = (mx - np.mean(mx)) + 1j * (my - np.mean(my))
-
-    # demodulate to baseband
-    exp = np.exp(-1j * 2 * np.pi * f0 * t)
-    m_bb = m_complex * exp
-
-    # moving-average low-pass filter
-    sigma_samples = (window / dt) / 6
-    if sigma_samples < 1:
-        sigma_samples = 1
-
-    m_bb_filtered = scipy.ndimage.gaussian_filter1d(m_bb, sigma=sigma_samples, mode='nearest')
-    m_bb_filtered *= 2
-
-    amplitude = np.abs(m_bb_filtered)
-    phase = np.angle(m_bb_filtered)
-
-    return amplitude, phase, m_bb_filtered
-
-def plot_signal(time_axis: np.ndarray, signal: np.ndarray, title: str, ylabel: str, filename: str):
-    plt.figure(figsize=(10, 5))
-    plt.plot(time_axis * 1e9, signal, label=ylabel)
-    plt.title(title)
-    plt.xlabel('Time (ns)')
-    plt.ylabel(ylabel)
-    plt.legend()
-    plt.grid(True)
-    plt.tight_layout()
-    plt.savefig(filename)
-    plt.close()
 
 def evaluate_objective(detector_regions: list[utils.DetectorRegion], 
                        input_dir: str, 
@@ -109,7 +55,21 @@ def evaluate_objective(detector_regions: list[utils.DetectorRegion],
 
         time_axis = np.arange(len(Mx_post_coupler)) * dt
 
-        plot_signal(time_axis, Mx_post_coupler**2 + My_post_coupler**2, "Post-Coupler Output Region Signal Energy Over Time", "Energy (a.u.)", "post_coupler_output_region_signal_energy.png")
+        utils.plot_signal(time_axis, Mx_post_coupler**2 + My_post_coupler**2, "Post-Coupler Output Region Signal Energy Over Time", "Energy (a.u.)", "post_coupler_output_region_signal_energy.png")
+
+    return total_energy
+
+def temporary_evaluate_objective(input_dir):
+    data = detector.detect_waves(x_range=(170, 171), 
+        y_range=(59, 65), 
+        input_dir=input_dir,
+        frame_count=len([name for name in os.listdir(input_dir) if name.endswith('.npy')]),
+        dt=50e-12,
+        detector_name="umm what the sigma balls")
+
+    mx = data[:, 0]
+    my = data[:, 1]
+    total_energy = np.sum(mx**2 + my**2)
 
     return total_energy
 
@@ -157,9 +117,9 @@ if __name__ == "__main__":
     my = My_post_coupler[mask]
     f0 = 2.5e9
 
-    amplitude, phase, complex_bb = extract_vector_frequency_amplitude(mx, my, 50e-12, f0, 10e-9)
+    amplitude, phase, complex_bb = utils.extract_vector_frequency_amplitude(mx, my, 50e-12, f0, 10e-9)
 
-    plot_signal(
+    utils.plot_signal(
         time_axis=t,
         signal=amplitude,
         title=f"Post-Coupler Output Region Transverse Magnetisation Amplitude Over Time ({f0*1e-9:.2f} GHz Component)",
@@ -167,7 +127,7 @@ if __name__ == "__main__":
         filename=f"post_coupler_output_region_transverse_magnetisation_amplitude_{f0*1e-9:.2f}GHz.png"
     )
 
-    plot_signal(
+    utils.plot_signal(
         time_axis=np.arange(len(Mx_post_coupler)) * 50e-12,
         signal=np.sqrt(Mx_post_coupler**2 + My_post_coupler**2),
         title="Post-Coupler Output Region Transverse Magnetisation Amplitude Over Time",

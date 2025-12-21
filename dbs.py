@@ -72,16 +72,18 @@ def direct_binary_search_decay(M0: np.ndarray,
                 mx3_file_path = os.path.join(output_folder, f"{j:06d}_design.mx3")
 
                 M = flip_patch(M, x, y, patch_size=1)
-                utils.generate_mx3_design(M, mx3_file_path, template_path, x_offset=150, y_offset=16)
+                # utils.generate_mx3_design(M, mx3_file_path, template_path, x_offset=150, y_offset=16)
+                utils.generate_mx3_design(M, mx3_file_path, template_path, x_offset=150, y_offset=7)
                 output = utils.run_mx3(mx3_exe_path, mx3_exe_convert_path, mx3_file_path, output_folder)
                 mumax_output_folder = f"{output_folder}/{j:06d}_design.out"
-                score = objective_function.evaluate_objective(
-                    detector_regions=[post_coupler_output_detector_region],
-                    input_dir=mumax_output_folder,
-                    frame_count=len([name for name in os.listdir(mumax_output_folder) if name.endswith('.npy')]),
-                    dt=50e-12,
-                    debug=False
-                )
+                # score = objective_function.evaluate_objective(
+                #     detector_regions=[post_coupler_output_detector_region],
+                #     input_dir=mumax_output_folder,
+                #     frame_count=len([name for name in os.listdir(mumax_output_folder) if name.endswith('.npy')]),
+                #     dt=50e-12,
+                #     debug=False
+                # )
+                score = objective_function.temporary_evaluate_objective(mumax_output_folder)
                 flipped = False
 
                 # check if improvement is significant (>1%)

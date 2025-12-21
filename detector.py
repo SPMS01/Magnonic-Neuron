@@ -35,7 +35,7 @@ def detect_waves(x_range: tuple,
     wave_data_y = []
 
     for i in range(frame_count):
-        data = np.load(os.path.join(input_dir, f'm{i:06d}.npy'))
+        data = np.load(os.path.join(input_dir, f'm_full{i:06d}.npy'))
 
         # Each .npy file stores [Mx, My, Mz] components
         slice_x = data[0, 0, y_start:y_end, x_start:x_end]
@@ -78,62 +78,82 @@ def detect_waves(x_range: tuple,
         plt.grid(True)
         plt.tight_layout()
         plt.savefig(os.path.join(input_dir, f"../{detector_name}_amplitude.png"))
+        plt.close()
 
     return wave_data
 
 if __name__ == "__main__":
-    # === Sanity check ===
-    INPUT_DIR = './ring-resonator.out'
-    end_detector_start = (719, 0)
-    end_detector_end = (720, 15)
+    INPUT_DIR = "resonator_7.05GHz.out"
 
-    start_detector_start = (199, 0)
-    start_detector_end = (200, 15)
+    # detect_waves(x_range=(200, 201), 
+    #     y_range=(0, 5), 
+    #     input_dir=INPUT_DIR,
+    #     frame_count=len([name for name in os.listdir(INPUT_DIR) if name.endswith('.npy')]),
+    #     dt=50e-12,
+    #     detector_name="umm what the sigma",
+    #     debug=True)
 
-    # Design region is 1um * 1um so i dont set the end
-    design_region_x_start = 50
-    design_region_y_start = 16
+    detect_waves(x_range=(170, 171), 
+        y_range=(59, 65), 
+        input_dir=INPUT_DIR,
+        frame_count=len([name for name in os.listdir(INPUT_DIR) if name.endswith('.npy')]),
+        dt=50e-12,
+        detector_name="umm what the sigma balls",
+        debug=True)
 
-    input_detector_start = (199, 67)
-    input_detector_end = (200, 82)
 
-    data = np.load(os.path.join(INPUT_DIR, f'm000400.npy'))[Dimension.X.value, 0]
+    # # === Sanity check ===
+    # INPUT_DIR = './ring-resonator.out'
+    # end_detector_start = (719, 0)
+    # end_detector_end = (720, 15)
 
-    # === PLOT ===
-    plt.figure(figsize=(10, 4))
-    vabs = np.max(np.abs(data))
-    plt.imshow(data, cmap='seismic', vmin=-vabs, vmax=vabs, origin='lower')
-    plt.colorbar(label='Magnetisation (arb. units)')
-    plt.title(f'm[{["x", "y", "z"][Dimension.X.value]}]')
+    # start_detector_start = (199, 0)
+    # start_detector_end = (200, 15)
 
-    # Draw detector boxes
-    plt.axvline(end_detector_start[0], color='lime', linestyle='--')
-    plt.axvline(end_detector_end[0], color='lime', linestyle='--')
-    plt.axhline(end_detector_start[1], color='lime', linestyle='--')
-    plt.axhline(end_detector_end[1], color='lime', linestyle='--')
-    plt.text(end_detector_start[0], end_detector_end[1]+1, 'Post-coupler Detector Region', color='lime')
+    # # Design region is 1um * 1um so i dont set the end
+    # design_region_x_start = 50
+    # design_region_y_start = 16
 
-    plt.axvline(start_detector_start[0], color='cyan', linestyle='--')
-    plt.axvline(start_detector_end[0], color='cyan', linestyle='--')
-    plt.axhline(start_detector_start[1], color='cyan', linestyle='--')
-    plt.axhline(start_detector_end[1], color='cyan', linestyle='--')
-    plt.text(start_detector_start[0], start_detector_end[1]+1, 'Pre-coupler Detector Region', color='cyan')
+    # input_detector_start = (199, 67)
+    # input_detector_end = (200, 82)
 
-    plt.axvline(input_detector_start[0], color='orange', linestyle='--')
-    plt.axvline(input_detector_end[0], color='orange', linestyle='--')
-    plt.axhline(input_detector_start[1], color='orange', linestyle='--')
-    plt.axhline(input_detector_end[1], color='orange', linestyle='--')
-    plt.text(input_detector_start[0], input_detector_end[1]+1, 'Input Detector Region', color='orange')
+    # data = np.load(os.path.join(INPUT_DIR, f'm000400.npy'))[Dimension.X.value, 0]
 
-    # Detector box for design region
-    # plt.axvline(design_region_x_start, color='red', linestyle='--')
-    # plt.axvline(design_region_x_start + 50, color='red', linestyle='--')
-    # plt.axhline(design_region_y_start, color='red', linestyle='--')
-    # plt.axhline(design_region_y_start + 50, color='red', linestyle='--')
-    # plt.text(design_region_x_start, design_region_y_start+1, 'Design Region Detector Region', color='red')
+    # # === PLOT ===
+    # plt.figure(figsize=(10, 4))
+    # vabs = np.max(np.abs(data))
+    # plt.imshow(data, cmap='seismic', vmin=-vabs, vmax=vabs, origin='lower')
+    # plt.colorbar(label='Magnetisation (arb. units)')
+    # plt.title(f'm[{["x", "y", "z"][Dimension.X.value]}]')
 
-    plt.xlabel('X index')
-    plt.ylabel('Y index')
-    plt.tight_layout()
-    # plt.show()
-    plt.savefig("sanity_check_plot.png")
+    # # Draw detector boxes
+    # plt.axvline(end_detector_start[0], color='lime', linestyle='--')
+    # plt.axvline(end_detector_end[0], color='lime', linestyle='--')
+    # plt.axhline(end_detector_start[1], color='lime', linestyle='--')
+    # plt.axhline(end_detector_end[1], color='lime', linestyle='--')
+    # plt.text(end_detector_start[0], end_detector_end[1]+1, 'Post-coupler Detector Region', color='lime')
+
+    # plt.axvline(start_detector_start[0], color='cyan', linestyle='--')
+    # plt.axvline(start_detector_end[0], color='cyan', linestyle='--')
+    # plt.axhline(start_detector_start[1], color='cyan', linestyle='--')
+    # plt.axhline(start_detector_end[1], color='cyan', linestyle='--')
+    # plt.text(start_detector_start[0], start_detector_end[1]+1, 'Pre-coupler Detector Region', color='cyan')
+
+    # plt.axvline(input_detector_start[0], color='orange', linestyle='--')
+    # plt.axvline(input_detector_end[0], color='orange', linestyle='--')
+    # plt.axhline(input_detector_start[1], color='orange', linestyle='--')
+    # plt.axhline(input_detector_end[1], color='orange', linestyle='--')
+    # plt.text(input_detector_start[0], input_detector_end[1]+1, 'Input Detector Region', color='orange')
+
+    # # Detector box for design region
+    # # plt.axvline(design_region_x_start, color='red', linestyle='--')
+    # # plt.axvline(design_region_x_start + 50, color='red', linestyle='--')
+    # # plt.axhline(design_region_y_start, color='red', linestyle='--')
+    # # plt.axhline(design_region_y_start + 50, color='red', linestyle='--')
+    # # plt.text(design_region_x_start, design_region_y_start+1, 'Design Region Detector Region', color='red')
+
+    # plt.xlabel('X index')
+    # plt.ylabel('Y index')
+    # plt.tight_layout()
+    # # plt.show()
+    # plt.savefig("sanity_check_plot.png")

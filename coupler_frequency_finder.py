@@ -35,8 +35,8 @@ for detector_region in [pre_coupler_input_region, post_coupler_output_region]:
 
     region_data[detector_region.region_type] = wave_data
 
-mx = region_data[utils.DetectorRegionType.POST_COUPLER_OUTPUT][:, 0]
-my = region_data[utils.DetectorRegionType.POST_COUPLER_OUTPUT][:, 1]
+mx = region_data[utils.DetectorRegionType.PRE_COUPLER_OUTPUT][:, 0]
+my = region_data[utils.DetectorRegionType.PRE_COUPLER_OUTPUT][:, 1]
 
 Yx = np.fft.rfft(mx - np.mean(mx))
 Yy = np.fft.rfft(my - np.mean(my))

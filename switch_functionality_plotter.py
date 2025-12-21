@@ -7,8 +7,9 @@ import shutil
 import utils
 import time
 import matplotlib
+from magnetisation_plotter import plot_magnetisation
 
-F0 = 2.48e9  # Target frequency in Hz
+F0 = 4.5e9  # Target frequency in Hz
 
 def calculate_switch_functionality(input_region: utils.DetectorRegion,
                                 output_region: utils.DetectorRegion,
@@ -101,6 +102,8 @@ def calculate_switch_functionality(input_region: utils.DetectorRegion,
 
         print(f"Completed simulation for B_ext = {i} mT. Time elapsed: {time.time() - start:.2f} seconds")
 
+        plot_magnetisation(os.path.join(input_dir, "m_full003000.npy"), os.path.join(output_dir, f"{i}mT_magnetisation_plot.svg"))
+
         shutil.rmtree(input_dir)
 
     end = time.time()
@@ -146,74 +149,78 @@ def plot_detector_regions(input_region: utils.DetectorRegion,
     plt.savefig('switch_functionality_detector_regions.png', dpi=300)
 
 if __name__ == "__main__":
-    OUTPUT_DIR = "./coupler_functionality_results_1.5GHz_fft"
-    TEMPLATE_PATH = "coupler_switch_functionality_template.mx3"
+    for i in range(1, 19):
+        F0 = i*0.5*1e9
+        print(f"Currently on {F0*1e-9}GHz")
+        OUTPUT_DIR = f"./coupler_functionality_results_{F0*1e-9}GHz_fft_2e-2_alpha"
+        TEMPLATE_PATH = "coupler_switch_functionality_template.mx3"
 
-    # for neuron switch functionality
-    # pre_neuron_input_region = utils.DetectorRegion(
-    #     region_type=utils.DetectorRegionType.PRE_COUPLER_OUTPUT,
-    #     x_range=(200, 201),
-    #     y_range=(67, 82)
-    # )
+        # for neuron switch functionality
+        # pre_neuron_input_region = utils.DetectorRegion(
+        #     region_type=utils.DetectorRegionType.PRE_COUPLER_OUTPUT,
+        #     x_range=(200, 201),
+        #     y_range=(67, 82)
+        # )
 
-    # post_neuron_output_region = utils.DetectorRegion(
-    #     region_type=utils.DetectorRegionType.POST_COUPLER_OUTPUT,
-    #     x_range=(650, 651),
-    #     y_range=(0, 15)
-    # )
+        # post_neuron_output_region = utils.DetectorRegion(
+        #     region_type=utils.DetectorRegionType.POST_COUPLER_OUTPUT,
+        #     x_range=(650, 651),
+        #     y_range=(0, 15)
+        # )
 
-    # for coupler switch functionality
-    pre_coupler_input_region = utils.DetectorRegion(
-        region_type=utils.DetectorRegionType.PRE_COUPLER_OUTPUT,
-        x_range=(149, 150),
-        y_range=(0, 15)
-    )
+        # for coupler switch functionality
+        pre_coupler_input_region = utils.DetectorRegion(
+            region_type=utils.DetectorRegionType.PRE_COUPLER_OUTPUT,
+            x_range=(149, 150),
+            y_range=(0, 15)
+        )
 
-    post_coupler_output_region = utils.DetectorRegion(
-        region_type=utils.DetectorRegionType.POST_COUPLER_OUTPUT,
-        x_range=(550, 551),
-        y_range=(0, 15)
-    )
-    
-    fields, ratios = calculate_switch_functionality(
-        input_region=pre_coupler_input_region,
-        output_region=post_coupler_output_region,
-        output_dir=OUTPUT_DIR,
-        template_path=TEMPLATE_PATH,
-        dt=50e-12,
-        debug=True
-    )
+        post_coupler_output_region = utils.DetectorRegion(
+            region_type=utils.DetectorRegionType.POST_COUPLER_OUTPUT,
+            x_range=(550, 551),
+            y_range=(0, 15)
+        )
+        
+        fields, ratios = calculate_switch_functionality(
+            input_region=pre_coupler_input_region,
+            output_region=post_coupler_output_region,
+            output_dir=OUTPUT_DIR,
+            template_path=TEMPLATE_PATH,
+            dt=50e-12,
+            debug=True
+        )
 
-    # plot the results
-    with open(os.path.join(OUTPUT_DIR, 'transmission_ratios.csv'), 'r') as f:
-        lines = f.readlines()
-        fields = []
-        ratios = []
-        for line in lines:
-            field, ratio = line.strip().split(',')
-            fields.append(float(field))
-            ratios.append(float(ratio))
+        # plot the results
+        with open(os.path.join(OUTPUT_DIR, 'transmission_ratios.csv'), 'r') as f:
+            lines = f.readlines()
+            fields = []
+            ratios = []
+            for line in lines:
+                field, ratio = line.strip().split(',')
+                fields.append(float(field))
+                ratios.append(float(ratio))
 
-    matplotlib.rcParams["mathtext.fontset"] = "stix"
-    plt.rcParams["font.family"] = "serif"
-    plt.rcParams["font.serif"] = "Times New Roman"
+        matplotlib.rcParams["mathtext.fontset"] = "stix"
+        plt.rcParams["font.family"] = "serif"
+        plt.rcParams["font.serif"] = "Times New Roman"
 
-    ax = plt.gca()
-    for spine in ax.spines.values():
-        spine.set_linewidth(1.5)
-    ax.tick_params(width=1.5, length=6)
+        ax = plt.gca()
+        for spine in ax.spines.values():
+            spine.set_linewidth(1.5)
+        ax.tick_params(width=1.5, length=6)
 
-    plt.figure()
-    plt.plot(fields, np.array(ratios) * 100, marker='o', color='black')
-    plt.xlabel(r"$b_0 \ \mathrm{(mT)}$", fontsize=20)
-    plt.ylabel(r"$P_{\mathrm{output}} \ / \ P_{\mathrm{input}} \ \mathrm{(\%)}$", fontsize=20)
-    plt.tick_params(labelsize=16)
-    plt.grid(False)
-    plt.tight_layout()
-    plt.savefig(os.path.join(OUTPUT_DIR, 'switch_functionality_plot.svg'), dpi=300)
+        plt.figure()
+        plt.plot(fields, np.array(ratios) * 100, marker='o', color='black')
+        plt.xlabel(r"$b_0 \ \mathrm{(mT)}$", fontsize=20)
+        plt.ylabel(r"$P_{\mathrm{output}} \ / \ P_{\mathrm{input}} \ \mathrm{(\%)}$", fontsize=20)
+        plt.tick_params(labelsize=16)
+        plt.grid(False)
+        plt.tight_layout()
+        plt.savefig(os.path.join(OUTPUT_DIR, 'switch_functionality_plot.svg'), dpi=300)
+        plt.close()
 
-    # plot_detector_regions(
-    #     input_region=pre_coupler_input_region,
-    #     output_region=post_coupler_output_region,
-    #     input_dir="./coupler.out"
-    # )
+        # plot_detector_regions(
+        #     input_region=pre_coupler_input_region,
+        #     output_region=post_coupler_output_region,
+        #     input_dir="./coupler.out"
+        # )
