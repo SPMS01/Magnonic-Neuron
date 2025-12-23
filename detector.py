@@ -11,7 +11,8 @@ def detect_waves(x_range: tuple,
                  y_range: tuple, 
                  input_dir: str, 
                  frame_count: int, 
-                 dt: int, 
+                 dt: int,
+                 file_prefix: str = "m_full",
                  detector_name: str = "detector",
                  debug: bool = False) -> np.ndarray:
     """
@@ -33,23 +34,28 @@ def detect_waves(x_range: tuple,
     y_start, y_end = y_range
     wave_data_x = []
     wave_data_y = []
+    wave_data_z = []
 
     for i in range(frame_count):
-        data = np.load(os.path.join(input_dir, f'm_full{i:06d}.npy'))
+        data = np.load(os.path.join(input_dir, f'{file_prefix}{i:06d}.npy'))
 
         # Each .npy file stores [Mx, My, Mz] components
         slice_x = data[0, 0, y_start:y_end, x_start:x_end]
         slice_y = data[1, 0, y_start:y_end, x_start:x_end]
+        slice_z = data[2, 0, y_start:y_end, x_start:x_end]
 
         avg_x = np.mean(slice_x)
         avg_y = np.mean(slice_y)
+        avg_z = np.mean(slice_z)
 
         wave_data_x.append(avg_x)
         wave_data_y.append(avg_y)
+        wave_data_z.append(avg_z)
 
     # Convert to NumPy arrays
     wave_data_x = np.array(wave_data_x)
     wave_data_y = np.array(wave_data_y)
+    wave_data_z = np.array(wave_data_z)
 
     # Combine both into shape (frame_count, 2)
     wave_data = np.stack((wave_data_x, wave_data_y), axis=1)
@@ -80,10 +86,27 @@ def detect_waves(x_range: tuple,
         plt.savefig(os.path.join(input_dir, f"../{detector_name}_amplitude.png"))
         plt.close()
 
+        # plot z component
+        plt.figure(figsize=(10, 5))
+        plt.plot(np.arange(len(wave_data_z)) * dt / 1e-9, wave_data_z, color='green')
+        plt.title("Longitudinal Magnetisation Mz")
+        plt.xlabel("Time (ns)")
+        plt.ylabel("Mz")
+        plt.grid(True)
+        plt.tight_layout()
+        plt.savefig(os.path.join(input_dir, f"../{detector_name}_mz.png"))
+        plt.close()
+
+        # print average of final 20% of mz
+        final_mz_avg = np.mean(wave_data_z[int(0.8 * frame_count):])
+        print(f"Average Mz in final 20% of simulation at detector '{detector_name}': {final_mz_avg}")
+        print(f"Angle: {np.arccos(final_mz_avg) * 180 / np.pi} degrees")
+        print(f"a_0^2: {1 - final_mz_avg}")
+
     return wave_data
 
 if __name__ == "__main__":
-    INPUT_DIR = "resonator_7.05GHz.out"
+    INPUT_DIR = "paper_coupler.out"
 
     # detect_waves(x_range=(200, 201), 
     #     y_range=(0, 5), 
@@ -93,8 +116,8 @@ if __name__ == "__main__":
     #     detector_name="umm what the sigma",
     #     debug=True)
 
-    detect_waves(x_range=(170, 171), 
-        y_range=(59, 65), 
+    detect_waves(x_range=(600, 601), 
+        y_range=(0, 5), 
         input_dir=INPUT_DIR,
         frame_count=len([name for name in os.listdir(INPUT_DIR) if name.endswith('.npy')]),
         dt=50e-12,

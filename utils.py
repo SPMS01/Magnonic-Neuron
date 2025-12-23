@@ -15,7 +15,8 @@ class DetectorRegionType(Enum):
     PRE_COUPLER_OUTPUT = 2
     INPUT = 3
     RING_WAVEGUIDE_INTERSECTION_OUTPUT = 4
-    EXCITATION_REGION = 5
+    EXCITATION_REGION = 5,
+    OTHER = 99
 
 class DetectorRegion:
     def __init__(self, region_type: DetectorRegionType, x_range: tuple, y_range: tuple) -> None:
