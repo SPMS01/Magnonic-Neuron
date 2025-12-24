@@ -50,7 +50,7 @@ def calculate_switch_functionality(mx3_output_dir: str,
 
         print(f"Completed simulation for B_ext = {i} mT. Time elapsed: {time.time() - t0:.2f} seconds")
 
-        plot_magnetisation(os.path.join(mx3_output_dir, "m003000.npy"), os.path.join(output_dir, f"{i}mT_magnetisation_plot.svg"))
+        plot_magnetisation(dx=20e-9, dy=20e-9, file_path=os.path.join(mx3_output_dir, "m003000.npy"), output_path=os.path.join(output_dir, f"{i}mT_magnetisation_plot.svg"))
         shutil.rmtree(mx3_output_dir)
 
     fields, ratios = zip(*power_ratios)
@@ -60,8 +60,8 @@ if __name__ == "__main__":
     # r1 is in the bottom waveguide
     # r2 is in the top waveguide
 
-    F0 = 6.5e9  # Target frequency in Hz
-    OUTPUT_DIR = f"./coupler_functionality_results_{F0*1e-9:.2f}GHz_60nm_gap"
+    F0 = 6.7e9  # Target frequency in Hz
+    OUTPUT_DIR = f"./coupler_functionality_results_{F0*1e-9:.2f}GHz"
     TEMPLATE_PATH = "coupler.mx3"
 
     r1 = utils.DetectorRegion(
@@ -72,7 +72,7 @@ if __name__ == "__main__":
 
     r2 = utils.DetectorRegion(
         region_type=utils.DetectorRegionType.POST_COUPLER_OUTPUT,
-        x_range=(400, 401),
+        x_range=(450, 451),
         y_range=(8, 13)
     )
     

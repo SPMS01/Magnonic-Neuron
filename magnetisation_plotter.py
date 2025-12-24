@@ -4,22 +4,32 @@ import os
 from utils import Dimension
 from matplotlib.colors import SymLogNorm
 
-def plot_magnetisation(file_path: str, output_path: str):
+def plot_magnetisation(dx: float, dy: float, file_path: str, output_path: str):
     data = np.load(file_path)[Dimension.X.value, 0]
 
-    plt.figure(figsize=(10, 4))
+    plt.figure(figsize=(10, 5))
     vabs = np.max(np.abs(data))
-    plt.imshow(data, cmap='seismic', vmin=-vabs, vmax=vabs, origin='lower')
-    # plt.imshow(data, cmap='jet', origin='lower')
-    plt.colorbar(label='Magnetisation (arb. units)')
-    plt.title(f'm[{["x", "y", "z"][Dimension.X.value]}]')
+    
+    # Calculate aspect ratio: physical height per cell / physical width per cell
+    # 5nm / 20nm = 0.25
+    cell_aspect = dy / dx
 
-    plt.xlim(300, 1000) # default: (600, 850)
-    plt.xlabel('X index')
-    plt.ylabel('Y index')
+    plt.imshow(data, 
+               cmap='seismic', 
+               vmin=-vabs, 
+               vmax=vabs, 
+               origin='lower',
+               aspect=cell_aspect) # This stretches the X-axis visually
+
+    plt.colorbar(label='Magnetisation (arb. units)')
+    plt.title(f'm[{["x", "y", "z"][Dimension.X.value]}]') 
+
+    # plt.xlim(600, 1200)
+    plt.xlabel('X (cell index)')
+    plt.ylabel('Y (cell index)')
     plt.tight_layout()
     plt.savefig(output_path)
     plt.close()
 
 if __name__ == "__main__":
-    plot_magnetisation("./coupler_shenanigans.out/m003000.npy", "baller.svg")
+    plot_magnetisation(dx=20e-9, dy=5e-9, file_path="./neuron.out/m003000.npy", output_path="neuron is thinking.svg")
