@@ -1,5 +1,5 @@
 SetCellSize(20e-9, 20e-9, 50e-9)
-SetGridSize(700, 13, 1)
+SetGridSize(700, 12, 1)
 B_ext = Vector(0, 0, 300e-3)
 Msat = 0
 Aex = 0
@@ -14,8 +14,8 @@ Msat.SetRegion(yig, 140e3)
 Aex.SetRegion(yig, 3.5e-12)
 alpha.SetRegion(yig, 2e-4)
 
-coupler := Cuboid(7.76e-6, 100e-9, 50e-9).Transl(0, 80e-9, 0)
-waveguide := Cuboid(14e-6, 100e-9, 50e-9).Transl(0, -80e-9, 0)
+coupler := Cuboid(6.76e-6, 100e-9, 50e-9).Transl(0, 70e-9, 0)
+waveguide := Cuboid(14e-6, 100e-9, 50e-9).Transl(0, -70e-9, 0)
 
 system := waveguide.add(coupler)
 SetGeom(system)
@@ -24,12 +24,13 @@ DefRegion(yig, system)
 alpha_max := 0.5
 damping_slice_width := 20e-9
 damping_region_width := (dampener_max_region - dampener_min_region + 1) * damping_slice_width
+
 for i := dampener_min_region; i <= dampener_max_region; i++ {
 	offset := (i - dampener_min_region)
 	right_lb := 7e-6 - damping_region_width + offset*damping_slice_width
 	right_rb := right_lb + damping_slice_width
     
-	coupler_right_lb := 3.88e-6 - damping_region_width + offset*damping_slice_width
+	coupler_right_lb := 3.38e-6 - damping_region_width + offset*damping_slice_width
 	coupler_right_rb := coupler_right_lb + damping_slice_width
 	right_dampener_region := xrange(right_lb, right_rb).
         intersect(waveguide).
@@ -39,7 +40,7 @@ for i := dampener_min_region; i <= dampener_max_region; i++ {
     left_rb := -7e-6 + damping_region_width - offset*damping_slice_width
 	left_lb := left_rb - damping_slice_width
 	
-    coupler_left_rb := -3.88e-6 + damping_region_width - offset*damping_slice_width
+    coupler_left_rb := -3.38e-6 + damping_region_width - offset*damping_slice_width
 	coupler_left_lb := coupler_left_rb - damping_slice_width
 	left_dampener_region := xrange(left_lb, left_rb).
         intersect(waveguide).
@@ -60,6 +61,7 @@ alpha.SetRegion(excitation_region, 2e-4)
 Msat.SetRegion(excitation_region, 140e3)
 Aex.SetRegion(excitation_region, 3.5e-12)
 // B_ext.SetRegion(excitation_region, Vector(1e-3 * sin(2 * pi * 6.5e9 * t), 0, 300e-3))
+// B_ext.SetRegion(excitation_region, Vector(1e-3 * sin(2 * pi * 6.7e9 * t), 0, 300e-3))
 
 // {{ INSERT EXCITATION FIELD HERE }}
 
@@ -69,8 +71,8 @@ Snapshot(alpha)
 Snapshot(geom)
 Snapshot(regions)
 
-Save(m_full)
-AutoSave(m_full, 50e-12)
+// Save(m_full)
+// AutoSave(m_full, 50e-12)
 
 Save(m)
 AutoSave(m, 50e-12)

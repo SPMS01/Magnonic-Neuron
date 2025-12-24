@@ -6,6 +6,7 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 from utils import Dimension
+import re
 
 def detect_waves(x_range: tuple, 
                  y_range: tuple, 
@@ -87,26 +88,46 @@ def detect_waves(x_range: tuple,
         plt.close()
 
         # plot z component
-        plt.figure(figsize=(10, 5))
-        plt.plot(np.arange(len(wave_data_z)) * dt / 1e-9, wave_data_z, color='green')
-        plt.title("Longitudinal Magnetisation Mz")
-        plt.xlabel("Time (ns)")
-        plt.ylabel("Mz")
-        plt.grid(True)
-        plt.tight_layout()
-        plt.savefig(os.path.join(input_dir, f"../{detector_name}_mz.png"))
-        plt.close()
+        # plt.figure(figsize=(10, 5))
+        # plt.plot(np.arange(len(wave_data_z)) * dt / 1e-9, wave_data_z, color='green')
+        # plt.title("Longitudinal Magnetisation Mz")
+        # plt.xlabel("Time (ns)")
+        # plt.ylabel("Mz")
+        # plt.grid(True)
+        # plt.tight_layout()
+        # plt.savefig(os.path.join(input_dir, f"../{detector_name}_mz.png"))
+        # plt.close()
 
-        # print average of final 20% of mz
-        final_mz_avg = np.mean(wave_data_z[int(0.8 * frame_count):])
-        print(f"Average Mz in final 20% of simulation at detector '{detector_name}': {final_mz_avg}")
-        print(f"Angle: {np.arccos(final_mz_avg) * 180 / np.pi} degrees")
-        print(f"a_0^2: {1 - final_mz_avg}")
+        # # print average of final 20% of mz
+        # final_mz_avg = np.mean(wave_data_z[int(0.8 * frame_count):])
+        # print(f"Average Mz in final 20% of simulation at detector '{detector_name}': {final_mz_avg}")
+        # print(f"Angle: {np.arccos(final_mz_avg) * 180 / np.pi} degrees")
+        # print(f"a_0^2: {1 - final_mz_avg}")
 
     return wave_data
 
 if __name__ == "__main__":
-    INPUT_DIR = "paper_coupler.out"
+    INPUT_DIR = "neuron.out"
+    FILE_PREFIX = "m_full"
+
+    detect_waves(x_range=(500, 501), 
+        y_range=(0, 20), 
+        input_dir=INPUT_DIR,
+        frame_count=len([name for name in os.listdir(INPUT_DIR) if re.fullmatch(rf"{FILE_PREFIX}\d+\.npy", name)]),
+        dt=50e-12,
+        file_prefix=FILE_PREFIX,
+        detector_name="detector_1",
+        debug=True)
+    
+    detect_waves(x_range=(400, 401), 
+        y_range=(28, 48), 
+        input_dir=INPUT_DIR,
+        frame_count=len([name for name in os.listdir(INPUT_DIR) if re.fullmatch(rf"{FILE_PREFIX}\d+\.npy", name)]),
+        dt=50e-12,
+        file_prefix=FILE_PREFIX,
+        detector_name="detector_2",
+        debug=True)
+
 
     # detect_waves(x_range=(200, 201), 
     #     y_range=(0, 5), 
@@ -116,67 +137,10 @@ if __name__ == "__main__":
     #     detector_name="umm what the sigma",
     #     debug=True)
 
-    detect_waves(x_range=(600, 601), 
-        y_range=(0, 5), 
-        input_dir=INPUT_DIR,
-        frame_count=len([name for name in os.listdir(INPUT_DIR) if name.endswith('.npy')]),
-        dt=50e-12,
-        detector_name="umm what the sigma balls",
-        debug=True)
-
-
-    # # === Sanity check ===
-    # INPUT_DIR = './ring-resonator.out'
-    # end_detector_start = (719, 0)
-    # end_detector_end = (720, 15)
-
-    # start_detector_start = (199, 0)
-    # start_detector_end = (200, 15)
-
-    # # Design region is 1um * 1um so i dont set the end
-    # design_region_x_start = 50
-    # design_region_y_start = 16
-
-    # input_detector_start = (199, 67)
-    # input_detector_end = (200, 82)
-
-    # data = np.load(os.path.join(INPUT_DIR, f'm000400.npy'))[Dimension.X.value, 0]
-
-    # # === PLOT ===
-    # plt.figure(figsize=(10, 4))
-    # vabs = np.max(np.abs(data))
-    # plt.imshow(data, cmap='seismic', vmin=-vabs, vmax=vabs, origin='lower')
-    # plt.colorbar(label='Magnetisation (arb. units)')
-    # plt.title(f'm[{["x", "y", "z"][Dimension.X.value]}]')
-
-    # # Draw detector boxes
-    # plt.axvline(end_detector_start[0], color='lime', linestyle='--')
-    # plt.axvline(end_detector_end[0], color='lime', linestyle='--')
-    # plt.axhline(end_detector_start[1], color='lime', linestyle='--')
-    # plt.axhline(end_detector_end[1], color='lime', linestyle='--')
-    # plt.text(end_detector_start[0], end_detector_end[1]+1, 'Post-coupler Detector Region', color='lime')
-
-    # plt.axvline(start_detector_start[0], color='cyan', linestyle='--')
-    # plt.axvline(start_detector_end[0], color='cyan', linestyle='--')
-    # plt.axhline(start_detector_start[1], color='cyan', linestyle='--')
-    # plt.axhline(start_detector_end[1], color='cyan', linestyle='--')
-    # plt.text(start_detector_start[0], start_detector_end[1]+1, 'Pre-coupler Detector Region', color='cyan')
-
-    # plt.axvline(input_detector_start[0], color='orange', linestyle='--')
-    # plt.axvline(input_detector_end[0], color='orange', linestyle='--')
-    # plt.axhline(input_detector_start[1], color='orange', linestyle='--')
-    # plt.axhline(input_detector_end[1], color='orange', linestyle='--')
-    # plt.text(input_detector_start[0], input_detector_end[1]+1, 'Input Detector Region', color='orange')
-
-    # # Detector box for design region
-    # # plt.axvline(design_region_x_start, color='red', linestyle='--')
-    # # plt.axvline(design_region_x_start + 50, color='red', linestyle='--')
-    # # plt.axhline(design_region_y_start, color='red', linestyle='--')
-    # # plt.axhline(design_region_y_start + 50, color='red', linestyle='--')
-    # # plt.text(design_region_x_start, design_region_y_start+1, 'Design Region Detector Region', color='red')
-
-    # plt.xlabel('X index')
-    # plt.ylabel('Y index')
-    # plt.tight_layout()
-    # # plt.show()
-    # plt.savefig("sanity_check_plot.png")
+    # detect_waves(x_range=(600, 601), 
+    #     y_range=(0, 5), 
+    #     input_dir=INPUT_DIR,
+    #     frame_count=len([name for name in os.listdir(INPUT_DIR) if name.endswith('.npy')]),
+    #     dt=50e-12,
+    #     detector_name="umm what the sigma balls",
+    #     debug=True)

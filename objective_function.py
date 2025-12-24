@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import hilbert, find_peaks, peak_widths, savgol_filter, butter, filtfilt
 import os
+import re
 
 def evaluate_objective(detector_regions: list[utils.DetectorRegion], 
                        input_dir: str, 
@@ -60,10 +61,10 @@ def evaluate_objective(detector_regions: list[utils.DetectorRegion],
     return total_energy
 
 def temporary_evaluate_objective(input_dir):
-    data = detector.detect_waves(x_range=(170, 171), 
-        y_range=(59, 65), 
+    data = detector.detect_waves(x_range=(500, 501), 
+        y_range=(0, 20), 
         input_dir=input_dir,
-        frame_count=len([name for name in os.listdir(input_dir) if name.endswith('.npy')]),
+        frame_count=len([name for name in os.listdir(input_dir) if re.fullmatch(rf"m_full\d+\.npy", name)]),
         dt=50e-12,
         detector_name="umm what the sigma balls")
 

@@ -6,7 +6,7 @@ from utils import Dimension
 from matplotlib.colors import SymLogNorm
 
 FILE_PREFIX = "m_full"
-INPUT_DIR = './resonator.out'
+INPUT_DIR = './paper_coupler.out'
 FRAME_COUNT = len([name for name in os.listdir(INPUT_DIR) if name.endswith('.npy')])
 DIMENSION = Dimension.X
 DT = 50e-12

@@ -35,6 +35,7 @@ def generate_mx3_design(M: np.ndarray, output_path: str, template_path: str, x_o
         X_OFFSET (int): X offset for the design region.
         HEIGHT (int): Height of the design region.
     """
+    # this is just like numpy; (0, 0) is bottom-left
     with open(template_path, "r") as template_file:
         content = template_file.read()
 
