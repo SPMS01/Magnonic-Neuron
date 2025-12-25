@@ -129,3 +129,8 @@ for ring_width in range(100, 301, 10): # in nm
         print(f"Ring width: {ring_width} nm, Ring radius: {ring_radius} nm, Accumulated energy: {accumulated_energy:.6g}, Time taken: {time.time() - t:.2f} seconds")
 
         shutil.rmtree(mx3_output_folder, ignore_errors=True)
+
+with open(os.path.join(OUTPUT_DIR, "ring_radius_optimization_results.txt"), "w+") as result_file:
+    result_file.write("Ring Width (nm), Ring Radius (nm), Accumulated Energy (a.u.)\n")
+    for ring_width, ring_radius, energy in results:
+        result_file.write(f"{ring_width}, {ring_radius}, {energy:.6g}\n")
