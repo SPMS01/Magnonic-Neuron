@@ -24,7 +24,7 @@ M0 = ((dist <= outer_r) & (dist >= inner_r)).astype(np.uint8)
 MX3_EXE_PATH = 'mumax3'
 MX3_EXE_CONVERT_PATH = 'mumax3-convert'
 OUTPUT_DIR = './dbs_output'
-TEMPLATE_PATH = 'neuron_dbs_template.mx3'
+TEMPLATE_PATH = 'reduced_neuron_dbs_template.mx3'
 DX = 20e-9
 DY = 5e-9
 # PATCH_SIZE = 100e-9

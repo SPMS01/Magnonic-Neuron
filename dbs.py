@@ -7,6 +7,15 @@ import glob
 import shutil
 from magnetisation_plotter import plot_magnetisation
 
+'''
+IMPORTANT WHENEVER UPDATING DBS:
+- Make sure to update the output directory structure in main.py if it was changed.
+- Make sure to update the TEMPLATE_PATH in main.py if the template file name was changed.
+- Make sure to update the X_OFFSET and Y_OFFSET values in main.py if they were changed.
+- Make sure to update the excitation region in the template file if the input waveguide position was changed.
+- Make sure to update the detector region in objective_function.py if the output waveguide position was changed.
+'''
+
 X_OFFSET = 100
 Y_OFFSET = 21
 
@@ -33,6 +42,7 @@ def DBS(M0: np.ndarray,
             initial_output = utils.run_mx3(mx3_exe_path, mx3_exe_convert_path, os.path.join(output_dir, "initial_design.mx3"), output_dir)
             initial_mumax_output_folder = f"{output_dir}/initial_design.out"
             best_score = objective_function.temporary_evaluate_objective(initial_mumax_output_folder)
+            plot_magnetisation(dx, dy, os.path.join(initial_mumax_output_folder, "m_full003000.npy"), os.path.join(output_dir, "initial_design_magnetisation.jpg"))
             print(f"[Initial] Score: {best_score:.6g}")
             dbs_score_log_file.write(f"0,{best_score},True\n")
             shutil.rmtree(initial_mumax_output_folder)
