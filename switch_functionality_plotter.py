@@ -61,19 +61,19 @@ if __name__ == "__main__":
     # r2 is in the top waveguide
 
     F0 = 6.7e9  # Target frequency in Hz
-    OUTPUT_DIR = f"./coupler_functionality_results_{F0*1e-9:.2f}GHz"
+    OUTPUT_DIR = f"./coupler_functionality_results_50nm_separation{F0*1e-9:.2f}GHz"
     TEMPLATE_PATH = "coupler.mx3"
 
     r1 = utils.DetectorRegion(
         region_type=utils.DetectorRegionType.PRE_COUPLER_OUTPUT,
         x_range=(600, 601),
-        y_range=(0, 5)
+        y_range=(0, 20)
     )
 
     r2 = utils.DetectorRegion(
         region_type=utils.DetectorRegionType.POST_COUPLER_OUTPUT,
         x_range=(450, 451),
-        y_range=(8, 13)
+        y_range=(15, 25)
     )
     
     fields, ratios = calculate_switch_functionality(

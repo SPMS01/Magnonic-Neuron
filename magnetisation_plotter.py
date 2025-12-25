@@ -29,7 +29,9 @@ def plot_magnetisation(dx: float, dy: float, file_path: str, output_path: str):
     plt.ylabel('Y (cell index)')
     plt.tight_layout()
     plt.savefig(output_path)
+    # plt.show()
     plt.close()
 
 if __name__ == "__main__":
-    plot_magnetisation(dx=20e-9, dy=5e-9, file_path="./neuron.out/m003000.npy", output_path="neuron is thinking.svg")
+    plot_magnetisation(dx=20e-9, dy=5e-9, file_path="./neuron.out/m_full001000.npy", output_path="updated pwease.svg")
+    # plot_magnetisation(dx=20e-9, dy=10e-9, file_path="./coupler.out/m_full003000.npy", output_path="coupler_mx_100.svg")

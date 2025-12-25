@@ -7,9 +7,9 @@ import re
 prefix = "paper_coupler" # was paper_coupler
 postfix = "sinc" # typically {f}GHz_{m}mT
 
-INPUT_DIR = "paper_coupler_sinc_160ns.out"
+INPUT_DIR = "test_coupler_pair.out"
 DT = 50e-12
-Y_SLICE = 3
+Y_SLICE = 5
 X_RANGE = (600, 3600)
 FILE_PREFIX = "m_full"
 
@@ -55,6 +55,6 @@ plt.xlim(-30, 0) # (-30, 0)
 plt.title(f"2D spectral map ({INPUT_DIR})")
 plt.colorbar(label="log10 intensity")
 plt.tight_layout()
-plt.savefig(f"peepeepoopoo.png") #paper_f-k_plot_{postfix}.png
+plt.savefig(f"blehhhhh.png") #paper_f-k_plot_{postfix}.png
 plt.show()
 plt.close()

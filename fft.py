@@ -6,9 +6,9 @@ import re
 
 INPUT_DIR = "neuron.out"
 DT = 50e-12
-Y_RANGE = (222, 242)
-X_RANGE = (60, 61)
-FILE_PREFIX = "m"
+Y_RANGE = (0, 20)
+X_RANGE = (500, 501)
+FILE_PREFIX = "m_full"
 # Y_RANGE = (0, 5)
 # X_RANGE = (200, 201)
 
@@ -38,4 +38,4 @@ plt.xlabel("Frequency (GHz)")
 plt.ylabel("FFT power")
 plt.xlim(6, 8)
 plt.tight_layout()
-plt.savefig("neuron_fft.png")
+plt.savefig("improved_neuron_fft.png")

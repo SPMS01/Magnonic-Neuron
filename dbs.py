@@ -5,7 +5,10 @@ import utils
 import objective_function
 import glob
 import shutil
+from magnetisation_plotter import plot_magnetisation
 
+X_OFFSET = 100
+Y_OFFSET = 21
 
 def DBS(M0: np.ndarray,
         mx3_exe_path: str,
@@ -16,22 +19,24 @@ def DBS(M0: np.ndarray,
         dy: float = 5e-9,
         patch_size: float = 100e-9,
         max_iterations: int = 100,
-        tolerance: float = 0.01) -> tuple[np.ndarray, float]:
+        tolerance: float = 0.01,
+        run_initial: bool = True) -> tuple[np.ndarray, float]:
     M = M0.copy()
     best_score = 0
 
     with open(os.path.join(output_dir, "dbs_scores.csv"), "w+") as dbs_score_log_file:
         dbs_score_log_file.write("Iteration,Score,Flipped\n")
 
-        utils.generate_mx3_design(M, os.path.join(output_dir, "initial_design.mx3"), template_path, x_offset=75, y_offset=21, height=200)
-        start = time.time()
-        initial_output = utils.run_mx3(mx3_exe_path, mx3_exe_convert_path, os.path.join(output_dir, "initial_design.mx3"), output_dir)
-        initial_mumax_output_folder = f"{output_dir}/initial_design.out"
-        best_score = objective_function.temporary_evaluate_objective(initial_mumax_output_folder)
-        print(f"[Initial] Score: {best_score:.6g}")
-        dbs_score_log_file.write(f"0,{best_score},True\n")
-        shutil.rmtree(initial_mumax_output_folder)
-        print(f"Initial design evaluation completed in {time.time() - start:.2f} s")
+        if run_initial:
+            utils.generate_mx3_design(M, os.path.join(output_dir, "initial_design.mx3"), template_path, x_offset=X_OFFSET, y_offset=Y_OFFSET, height=200)
+            start = time.time()
+            initial_output = utils.run_mx3(mx3_exe_path, mx3_exe_convert_path, os.path.join(output_dir, "initial_design.mx3"), output_dir)
+            initial_mumax_output_folder = f"{output_dir}/initial_design.out"
+            best_score = objective_function.temporary_evaluate_objective(initial_mumax_output_folder)
+            print(f"[Initial] Score: {best_score:.6g}")
+            dbs_score_log_file.write(f"0,{best_score},True\n")
+            shutil.rmtree(initial_mumax_output_folder)
+            print(f"Initial design evaluation completed in {time.time() - start:.2f} s")
         
         for i in range(max_iterations):
             improved = False
@@ -56,7 +61,7 @@ def DBS(M0: np.ndarray,
                 mx3_file_path = os.path.join(flip_output_folder, f"{j:06d}_design.mx3")
                 
                 M[y:y + patch_size_y, x:x + patch_size_x] = 1 - M[y:y + patch_size_y, x:x + patch_size_x]
-                utils.generate_mx3_design(M, mx3_file_path, template_path, x_offset=75, y_offset=21, height=200)
+                utils.generate_mx3_design(M, mx3_file_path, template_path, x_offset=X_OFFSET, y_offset=Y_OFFSET, height=200)
                 console_output = utils.run_mx3(mx3_exe_path, mx3_exe_convert_path, mx3_file_path, flip_output_folder)
                 mumax_output_folder = f"{flip_output_folder}/{j:06d}_design.out"
                 score = objective_function.temporary_evaluate_objective(mumax_output_folder)
@@ -69,6 +74,7 @@ def DBS(M0: np.ndarray,
                     improved = True
                     flipped = True
 
+                    plot_magnetisation(dx, dy, os.path.join(mumax_output_folder, "m_full003000.npy"), os.path.join(flip_output_folder, "magnetisation.jpg"))
                     for file in glob.glob(f"{mumax_output_folder}/*.jpg"):
                         shutil.move(file, flip_output_folder)
                     for file in glob.glob(f"{mumax_output_folder}/*.png"):
@@ -82,6 +88,7 @@ def DBS(M0: np.ndarray,
                     shutil.rmtree(flip_output_folder)
 
                 dbs_score_log_file.write(f"{i},{best_score},{flipped}\n")
+                dbs_score_log_file.flush()
 
             if not improved:
                 print("No further improvement possible. Terminating.")

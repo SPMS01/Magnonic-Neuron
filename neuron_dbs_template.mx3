@@ -1,5 +1,5 @@
 SetCellSize(20e-9, 5e-9, 50e-9)
-SetGridSize(590, 242, 1)
+SetGridSize(620, 242, 1)
 
 B_ext = Vector(0, 0, 300e-3)
 Msat = 0
@@ -15,13 +15,13 @@ Msat.SetRegion(yig, 140e3)
 Aex.SetRegion(yig, 3.5e-12)
 alpha.SetRegion(yig, 2e-4)
 
-input_waveguide := Cuboid(4e-6, 100e-9, 50e-9).Transl(-3.9e-6, 555e-9, 0)
+input_waveguide := Cuboid(5e-6, 100e-9, 50e-9).Transl(-3.7e-6, 555e-9, 0)
 // ring_ext := Cylinder(1e-6, 50e-9)
 // ring_int := Cylinder(700e-9, 50e-9)
-// ring := ring_ext.Sub(ring_int).Transl(-3.9e-6, 0, 0)
-design_region := Cuboid(1e-6, 1e-6, 50e-9).Transl(-3.9e-6, 0, 0)
-output_waveguide := Cuboid(11.8e-6, 100e-9, 50e-9).Transl(0, -555e-9, 0)
-coupler := Cuboid(6.76e-6, 100e-9, 50e-9).Transl(0.52e-6, -415e-9, 0)
+// ring := ring_ext.Sub(ring_int).Transl(-3.7e-6, 0, 0)
+design_region := Cuboid(1e-6, 1e-6, 50e-9).Transl(-3.7e-6, 0, 0)
+output_waveguide := Cuboid(12.4e-6, 100e-9, 50e-9).Transl(0, -555e-9, 0)
+coupler := Cuboid(7.32e-6, 100e-9, 50e-9).Transl(1.04e-6, -415e-9, 0)
 neuron := design_region.add(input_waveguide).add(output_waveguide).add(coupler)
 SetGeom(neuron)
 DefRegion(yig, neuron)
@@ -33,13 +33,13 @@ damping_region_width := (dampener_max_region - dampener_min_region + 1) * dampin
 for i := dampener_min_region; i <= dampener_max_region; i++ {
     offset := (i - dampener_min_region)
 
-    input_waveguide_right_lb := -1.9e-6 - damping_region_width + offset * damping_slice_width
+    input_waveguide_right_lb := -1.2e-6 - damping_region_width + offset * damping_slice_width
     input_waveguide_right_rb := input_waveguide_right_lb + damping_slice_width
 
-    output_waveguide_right_lb := 5.9e-6 - damping_region_width + offset * damping_slice_width
+    output_waveguide_right_lb := 6.2e-6 - damping_region_width + offset * damping_slice_width
     output_waveguide_right_rb := output_waveguide_right_lb + damping_slice_width
 
-    coupler_right_lb := 3.9e-6 - damping_region_width + offset * damping_slice_width
+    coupler_right_lb := 4.7e-6 - damping_region_width + offset * damping_slice_width
     coupler_right_rb := coupler_right_lb + damping_slice_width
     right_dampener_region := xrange(input_waveguide_right_lb, input_waveguide_right_rb).
         intersect(input_waveguide).
@@ -48,10 +48,10 @@ for i := dampener_min_region; i <= dampener_max_region; i++ {
         add(xrange(coupler_right_lb, coupler_right_rb).
         intersect(coupler))
 
-    left_rb := -5.9e-6 + damping_region_width - offset * damping_slice_width
+    left_rb := -6.2e-6 + damping_region_width - offset * damping_slice_width
     left_lb := left_rb - damping_slice_width
 
-    coupler_left_rb := -2.86e-6 + damping_region_width - offset * damping_slice_width
+    coupler_left_rb := -2.62e-6 + damping_region_width - offset * damping_slice_width
     coupler_left_lb := coupler_left_rb - damping_slice_width
     left_dampener_region := xrange(left_lb, left_rb).
         intersect(input_waveguide).
@@ -71,19 +71,21 @@ for i := dampener_min_region; i <= dampener_max_region; i++ {
 
 Relax()
 print(m)
-DefRegion(excitation_region, xrange(-2.76e-6, -2.7e-6).intersect(input_waveguide))
+DefRegion(excitation_region, xrange(-2.06e-6, -2e-6).intersect(input_waveguide))
 alpha.SetRegion(excitation_region, 2e-4)
 Msat.SetRegion(excitation_region, 140e3)
 Aex.SetRegion(excitation_region, 3.5e-12)
 B_ext.SetRegion(excitation_region, Vector(10e-3 * sin(2 * pi * 6.7e9 * (t - 3e-9)), 0, 300e-3))
 // B_ext.SetRegion(excitation_region, Vector(10e-3 * sinc(2*pi*10e9*(t-1e-10)), 0, 0))
 
-
 Snapshot(Msat)
 Snapshot(Aex)
 Snapshot(alpha)
 Snapshot(geom)
 Snapshot(regions)
+
+Save(m)
+AutoSave(m, 50e-12)
 
 Save(m_full)
 AutoSave(m_full, 50e-12)

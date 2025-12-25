@@ -27,22 +27,33 @@ OUTPUT_DIR = './dbs_output'
 TEMPLATE_PATH = 'neuron_dbs_template.mx3'
 DX = 20e-9
 DY = 5e-9
-PATCH_SIZE = 100e-9
+# PATCH_SIZE = 100e-9
 
 # Clean output directory
 shutil.rmtree(OUTPUT_DIR, ignore_errors=True)
 os.mkdir(OUTPUT_DIR)
 
-dbs.DBS(
-    M0=M0,
-    mx3_exe_path=MX3_EXE_PATH,
-    mx3_exe_convert_path=MX3_EXE_CONVERT_PATH,
-    template_path=TEMPLATE_PATH,
-    output_dir=OUTPUT_DIR,
-    dx=DX,
-    dy=DY,
-    patch_size=PATCH_SIZE
-)
+m0 = M0.copy()
+run_initial = True
+
+for patch_size in [200e-9, 100e-9, 40e-9, 20e-9]:
+    output_dir = os.path.join(OUTPUT_DIR, f'patch_{int(patch_size*1e9)}nm')
+    os.mkdir(output_dir)
+
+    m, score = dbs.DBS(
+        M0=m0,
+        mx3_exe_path=MX3_EXE_PATH,
+        mx3_exe_convert_path=MX3_EXE_CONVERT_PATH,
+        template_path=TEMPLATE_PATH,
+        output_dir=output_dir,
+        dx=DX,
+        dy=DY,
+        patch_size=patch_size,
+        run_initial=run_initial
+    )
+
+    m0 = m.copy()
+    run_initial = False
 
 # M_output, final_score = dbs.direct_binary_search_decay(
 #     M0=M0,
