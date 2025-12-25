@@ -61,7 +61,7 @@ def evaluate_objective(detector_regions: list[utils.DetectorRegion],
     return total_energy
 
 def temporary_evaluate_objective(input_dir):
-    data = detector.detect_waves(x_range=(500, 501), 
+    data = detector.detect_waves(x_range=(550, 551), 
         y_range=(0, 20), 
         input_dir=input_dir,
         frame_count=len([name for name in os.listdir(input_dir) if re.fullmatch(rf"m_full\d+\.npy", name)]),
