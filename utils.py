@@ -3,6 +3,7 @@ from enum import Enum
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy
+import os
 
 class Dimension(Enum):
     X = 0
@@ -36,7 +37,7 @@ def generate_mx3_design(M: np.ndarray, output_path: str, template_path: str, x_o
         HEIGHT (int): Height of the design region.
     """
     # this is just like numpy; (0, 0) is bottom-left
-    with open(template_path, "r") as template_file:
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), template_path), "r") as template_file:
         content = template_file.read()
 
     magnetisation = ""
