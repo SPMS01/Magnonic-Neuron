@@ -64,28 +64,28 @@ if __name__ == "__main__":
     OUTPUT_DIR = f"./coupler_functionality_results_50nm_separation{F0*1e-9:.2f}GHz"
     TEMPLATE_PATH = "coupler.mx3"
 
-    r1 = utils.DetectorRegion(
-        region_type=utils.DetectorRegionType.PRE_COUPLER_OUTPUT,
-        x_range=(600, 601),
-        y_range=(0, 20)
-    )
+    # r1 = utils.DetectorRegion(
+    #     region_type=utils.DetectorRegionType.PRE_COUPLER_OUTPUT,
+    #     x_range=(600, 601),
+    #     y_range=(0, 20)
+    # )
 
-    r2 = utils.DetectorRegion(
-        region_type=utils.DetectorRegionType.POST_COUPLER_OUTPUT,
-        x_range=(450, 451),
-        y_range=(15, 25)
-    )
+    # r2 = utils.DetectorRegion(
+    #     region_type=utils.DetectorRegionType.POST_COUPLER_OUTPUT,
+    #     x_range=(450, 451),
+    #     y_range=(15, 25)
+    # )
     
-    fields, ratios = calculate_switch_functionality(
-        mx3_output_dir="./coupler.out",
-        output_dir=OUTPUT_DIR,
-        template_path=TEMPLATE_PATH,
-        p1=r1,
-        p2=r2,
-        f0=F0,
-        dt=50e-12,
-        debug=False
-    )
+    # fields, ratios = calculate_switch_functionality(
+    #     mx3_output_dir="./coupler.out",
+    #     output_dir=OUTPUT_DIR,
+    #     template_path=TEMPLATE_PATH,
+    #     p1=r1,
+    #     p2=r2,
+    #     f0=F0,
+    #     dt=50e-12,
+    #     debug=False
+    # )
 
     # plot the results
     with open(os.path.join(OUTPUT_DIR, 'power_ratios.csv'), 'r') as f:
@@ -101,16 +101,29 @@ if __name__ == "__main__":
     plt.rcParams["font.family"] = "serif"
     plt.rcParams["font.serif"] = "Times New Roman"
 
+    plt.figure()
     ax = plt.gca()
+
+    # Plot
+    ax.plot(fields, np.array(ratios) * 100, marker='o', color='black')
+    ax.set_xlabel(r"$b_0 \ \mathrm{(mT)}$", fontsize=20)
+    ax.set_ylabel(r"$P_{\mathrm{1}} \ / (\ P_{\mathrm{1}} \mathrm{+} P_{\mathrm{2}}) \ \mathrm{(\%)}$", fontsize=20)
+    ax.tick_params(labelsize=16, width=1.5, length=6)
     for spine in ax.spines.values():
         spine.set_linewidth(1.5)
-    ax.tick_params(width=1.5, length=6)
+    # ax.text(
+    #     0.02, 0.98,
+    #     r"$\mathrm{d)}$",
+    #     transform=ax.transAxes,
+    #     fontsize=38,
+    #     va="top",
+    #     ha="left"
+    # )
 
-    plt.figure()
-    plt.plot(fields, np.array(ratios) * 100, marker='o', color='black')
-    plt.xlabel(r"$b_0 \ \mathrm{(mT)}$", fontsize=20)
-    plt.ylabel(r"$P_{\mathrm{output}} \ / \ P_{\mathrm{input}} \ \mathrm{(\%)}$", fontsize=20)
-    plt.tick_params(labelsize=16)
-    plt.grid(False)
+    ax.grid(False)
     plt.tight_layout()
-    plt.savefig(os.path.join(OUTPUT_DIR, 'switch_functionality_plot.svg'), dpi=300)
+    plt.savefig(
+        os.path.join(OUTPUT_DIR, 'switch_functionality_plot.svg'),
+        dpi=300
+    )
+    plt.close()

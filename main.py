@@ -34,7 +34,6 @@ shutil.rmtree(OUTPUT_DIR, ignore_errors=True)
 os.mkdir(OUTPUT_DIR)
 
 m0 = M0.copy()
-run_initial = True
 
 for patch_size in [200e-9, 100e-9, 40e-9, 20e-9]:
     output_dir = os.path.join(OUTPUT_DIR, f'patch_{int(patch_size*1e9)}nm')
@@ -48,12 +47,10 @@ for patch_size in [200e-9, 100e-9, 40e-9, 20e-9]:
         output_dir=output_dir,
         dx=DX,
         dy=DY,
-        patch_size=patch_size,
-        run_initial=run_initial
+        patch_size=patch_size
     )
 
     m0 = m.copy()
-    run_initial = False
 
 # M_output, final_score = dbs.direct_binary_search_decay(
 #     M0=M0,

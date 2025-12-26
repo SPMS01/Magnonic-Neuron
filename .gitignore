@@ -4,6 +4,7 @@
 *.mx3
 *.csv
 *.svg
+*.npy
 
 __pycache__
 switch_functionality_results
