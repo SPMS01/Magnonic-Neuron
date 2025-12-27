@@ -74,6 +74,21 @@ def temporary_evaluate_objective(input_dir, x_range=(175, 176), y_range=(0, 20))
 
     return total_energy
 
+def reward_highest_amplitude(inputdir, x_range=(175, 176), y_range=(0, 20)):
+    data = detector.detect_waves(x_range=x_range, 
+        y_range=y_range, 
+        input_dir=inputdir,
+        frame_count=len([name for name in os.listdir(inputdir) if re.fullmatch(rf"m_full\d+\.npy", name)]),
+        dt=50e-12,
+        detector_name="umm what the sigma balls")
+
+    mx = data[:, 0]
+    my = data[:, 1]
+    amplitude = np.sqrt(mx**2 + my**2)
+    max_amplitude = np.max(amplitude)
+
+    return max_amplitude
+
 if __name__ == "__main__":
     INPUT_DIR = './ring-resonator.out'
 
