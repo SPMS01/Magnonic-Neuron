@@ -71,7 +71,7 @@ DefRegion(excitation_region, xrange(1.64e-6, 1.7e-6).intersect(input_waveguide))
 alpha.SetRegion(excitation_region, 2e-4)
 Msat.SetRegion(excitation_region, 140e3)
 Aex.SetRegion(excitation_region, 3.5e-12)
-B_ext.SetRegion(excitation_region, Vector(10e-3 * sin(2 * pi * 6.7e9 * (t - 3e-9)), 0, 300e-3))
+B_ext.SetRegion(excitation_region, Vector(45e-3 * sin(2 * pi * 6.7e9 * (t - 3e-9)), 0, 300e-3))
 // B_ext.SetRegion(excitation_region, Vector(10e-3 * sinc(2*pi*10e9*(t-1e-10)), 0, 0))
 
 Snapshot(Msat)

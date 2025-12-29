@@ -18,12 +18,14 @@ IMPORTANT WHENEVER UPDATING DBS:
 
 X_OFFSET = 100
 Y_OFFSET = 21
+DBS_OBJECTIVE_FUNCTION = objective_function.temporary_evaluate_objective
 
 def DBS(M0: np.ndarray,
         mx3_exe_path: str,
         mx3_exe_convert_path: str,
         template_path: str,
         output_dir: str,
+        flip_list_path: str,
         dx: float = 20e-9,
         dy: float = 5e-9,
         patch_size: float = 100e-9,
@@ -41,7 +43,7 @@ def DBS(M0: np.ndarray,
             start = time.time()
             initial_output = utils.run_mx3(mx3_exe_path, mx3_exe_convert_path, os.path.join(output_dir, "initial_design.mx3"), output_dir)
             initial_mumax_output_folder = f"{output_dir}/initial_design.out"
-            best_score = objective_function.temporary_evaluate_objective(initial_mumax_output_folder)
+            best_score = DBS_OBJECTIVE_FUNCTION(initial_mumax_output_folder)
             plot_magnetisation(dx, dy, os.path.join(initial_mumax_output_folder, "m_full003000.npy"), os.path.join(output_dir, "initial_design_magnetisation.jpg"))
             print(f"[Initial] Score: {best_score:.6g}")
             dbs_score_log_file.write(f"0,{best_score},True\n")
@@ -52,17 +54,24 @@ def DBS(M0: np.ndarray,
             improved = False
             patch_size_x = int(patch_size / dx)
             patch_size_y = int(patch_size / dy)
-            coords = [
-                (j, k)
-                for j in range(0, M.shape[0] - patch_size_y + 1, patch_size_y)
-                for k in range(0, M.shape[1] - patch_size_x + 1, patch_size_x)
-            ]
-            np.random.shuffle(coords)
+            if os.path.exists(flip_list_path):
+                coords = np.load(flip_list_path).tolist()
+            else:
+                coords = [
+                    (j, k)
+                    for j in range(0, M.shape[0] - patch_size_y + 1, patch_size_y)
+                    for k in range(0, M.shape[1] - patch_size_x + 1, patch_size_x)
+                ]
+                np.random.shuffle(coords)
 
             iteration_run_folder = os.path.join(output_dir, f"iteration_{i:06d}")
             os.mkdir(iteration_run_folder)
 
             for j, (y, x) in enumerate(coords):
+                np.save(flip_list_path, coords[j:])
+
+                print(np.load(flip_list_path).tolist())
+
                 start = time.time()
 
                 flip_output_folder = os.path.join(iteration_run_folder, f"patch_{j:06d}")
@@ -74,7 +83,7 @@ def DBS(M0: np.ndarray,
                 utils.generate_mx3_design(M, mx3_file_path, template_path, x_offset=X_OFFSET, y_offset=Y_OFFSET, height=200)
                 console_output = utils.run_mx3(mx3_exe_path, mx3_exe_convert_path, mx3_file_path, flip_output_folder)
                 mumax_output_folder = f"{flip_output_folder}/{j:06d}_design.out"
-                score = objective_function.temporary_evaluate_objective(mumax_output_folder)
+                score = DBS_OBJECTIVE_FUNCTION(mumax_output_folder)
                 flipped = False
 
                 if score > 0 and (best_score == 0 or (score - best_score) / best_score > tolerance):
@@ -99,6 +108,10 @@ def DBS(M0: np.ndarray,
 
                 dbs_score_log_file.write(f"{i},{best_score},{flipped}\n")
                 dbs_score_log_file.flush()
+
+            # delete flip list after each iteration
+            if os.path.exists(flip_list_path):
+                os.remove(flip_list_path)
 
             if not improved:
                 print("No further improvement possible. Terminating.")
