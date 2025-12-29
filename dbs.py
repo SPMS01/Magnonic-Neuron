@@ -70,8 +70,6 @@ def DBS(M0: np.ndarray,
             for j, (y, x) in enumerate(coords):
                 np.save(flip_list_path, coords[j:])
 
-                print(np.load(flip_list_path).tolist())
-
                 start = time.time()
 
                 flip_output_folder = os.path.join(iteration_run_folder, f"patch_{j:06d}")
