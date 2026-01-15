@@ -109,7 +109,7 @@ def detect_waves(x_range: tuple,
     return wave_data
 
 if __name__ == "__main__":
-    INPUT_DIR = "./000008_design.out"
+    INPUT_DIR = "./single_waveguide_6.7GHz_33mT.out"
     FILE_PREFIX = "m_full"
 
     d = detect_waves(x_range=(200, 201), 
@@ -121,6 +121,7 @@ if __name__ == "__main__":
         detector_name=f"{INPUT_DIR}detector_1",
         debug=True)
     print(f"total energy for {INPUT_DIR}: {np.sum(d[:,0]**2 + d[:,1]**2):.2e}")
+    print(f"Average transverse magnetisation amplitude: {np.mean(np.sqrt(d[int(0.5 * len(d)):,0]**2 + d[int(0.5 * len(d)):,1]**2)):.4f}")
 
     # INPUT_DIR = "./switch_functionality_6.70GHz_33mT.out"
     # FILE_PREFIX = "m_full"

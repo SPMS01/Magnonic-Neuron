@@ -61,31 +61,33 @@ if __name__ == "__main__":
     # r2 is in the top waveguide
 
     F0 = 6.7e9  # Target frequency in Hz
-    OUTPUT_DIR = f"./coupler_functionality_results_50nm_separation{F0*1e-9:.2f}GHz"
+    OUTPUT_DIR = f"./coupler_functionality_results_70nm_separation{F0*1e-9:.2f}GHz"
     TEMPLATE_PATH = "coupler.mx3"
 
-    # r1 = utils.DetectorRegion(
-    #     region_type=utils.DetectorRegionType.PRE_COUPLER_OUTPUT,
-    #     x_range=(600, 601),
-    #     y_range=(0, 20)
-    # )
+    r1 = utils.DetectorRegion(
+        region_type=utils.DetectorRegionType.PRE_COUPLER_OUTPUT,
+        # x_range=(600, 601),
+        x_range=(1000, 1001),
+        y_range=(0, 10)
+    )
 
-    # r2 = utils.DetectorRegion(
-    #     region_type=utils.DetectorRegionType.POST_COUPLER_OUTPUT,
-    #     x_range=(450, 451),
-    #     y_range=(15, 25)
-    # )
+    r2 = utils.DetectorRegion(
+        region_type=utils.DetectorRegionType.POST_COUPLER_OUTPUT,
+        # x_range=(450, 451),
+        x_range=(800, 801),
+        y_range=(17, 27)
+    )
     
-    # fields, ratios = calculate_switch_functionality(
-    #     mx3_output_dir="./coupler.out",
-    #     output_dir=OUTPUT_DIR,
-    #     template_path=TEMPLATE_PATH,
-    #     p1=r1,
-    #     p2=r2,
-    #     f0=F0,
-    #     dt=50e-12,
-    #     debug=False
-    # )
+    fields, ratios = calculate_switch_functionality(
+        mx3_output_dir="./coupler.out",
+        output_dir=OUTPUT_DIR,
+        template_path=TEMPLATE_PATH,
+        p1=r1,
+        p2=r2,
+        f0=F0,
+        dt=50e-12,
+        debug=False
+    )
 
     # plot the results
     with open(os.path.join(OUTPUT_DIR, 'power_ratios.csv'), 'r') as f:

@@ -1,16 +1,14 @@
 import os, glob
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 import utils
 import re
 
-prefix = "paper_coupler" # was paper_coupler
-postfix = "sinc" # typically {f}GHz_{m}mT
-
-INPUT_DIR = "test_coupler_pair.out"
+INPUT_DIR = "test_coupler_pair_100nm_gap.out"
 DT = 50e-12
 Y_SLICE = 5
-X_RANGE = (600, 3600)
+X_RANGE = (600, 4600)
 FILE_PREFIX = "m_full"
 
 x_t = []
@@ -46,15 +44,41 @@ mask = f > 0
 f_pos = f[mask]
 I_pos = I[mask, :]
 
-plt.figure(figsize=(7,4))
-plt.pcolormesh(k, f_pos, np.log10(I_pos + 1e-30), shading="auto", cmap="inferno")
-plt.xlabel("k (rad/µm)") # Labeled correctly now
-plt.ylabel("f (GHz)")
+matplotlib.rcParams["mathtext.fontset"] = "stix"
+plt.rcParams["font.family"] = "serif"
+plt.rcParams["font.serif"] = "Times New Roman"
+# plt.rcParams["xtick.color"] = "white"
+# plt.rcParams["ytick.color"] = "white"
+# plt.rcParams["text.color"] = "white"
+
+plt.figure()
+ax = plt.gca()
+
+# Plot
+ax.pcolormesh(-k, f_pos, np.log10(I_pos + 1e-30), shading="auto", cmap="inferno")
+ax.set_xlabel(r"$k_x \ \mathrm{(rad/\mu m)}$", fontsize=20)
+ax.set_ylabel(r"$f \ \mathrm{(GHz)}$", fontsize=20)
+ax.tick_params(labelsize=16, width=1.5, length=6) # default labelsize=16
+for spine in ax.spines.values():
+    spine.set_linewidth(1.5)
+    # spine.set_color("white")
+
+ax.grid(False)
 plt.ylim(5.5, 7.5) # (5.5, 7.5)
-plt.xlim(-30, 0) # (-30, 0)
-plt.title(f"2D spectral map ({INPUT_DIR})")
-plt.colorbar(label="log10 intensity")
+plt.xlim(0, 30) # (-30, 0)
 plt.tight_layout()
-plt.savefig(f"blehhhhh.png") #paper_f-k_plot_{postfix}.png
-plt.show()
-plt.close()
+# plt.show()
+plt.savefig(f"innovative 100nm.png", dpi=1200) #paper_f-k_plot_{postfix}.png
+
+# plt.figure(figsize=(7,4))
+# plt.pcolormesh(k, f_pos, np.log10(I_pos + 1e-30), shading="auto", cmap="inferno")
+# plt.xlabel("k (rad/µm)") # Labeled correctly now
+# plt.ylabel("f (GHz)")
+# plt.ylim(5.5, 7.5) # (5.5, 7.5)
+# plt.xlim(-30, 0) # (-30, 0)
+# # plt.title(f"2D spectral map ({INPUT_DIR})")
+# plt.colorbar(label="log10 intensity")
+# plt.tight_layout()
+# plt.savefig(f"blehhhhh.png", dpi=1200) #paper_f-k_plot_{postfix}.png
+# # plt.show()
+# plt.close()
