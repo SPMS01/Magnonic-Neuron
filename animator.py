@@ -3,9 +3,10 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import os
 from utils import Dimension
+from matplotlib.colors import SymLogNorm
 
-FILE_PREFIX = "m"
-INPUT_DIR = './ring-resonator.out'
+FILE_PREFIX = "m_full"
+INPUT_DIR = './paper_coupler.out'
 FRAME_COUNT = len([name for name in os.listdir(INPUT_DIR) if name.endswith('.npy')])
 DIMENSION = Dimension.X
 DT = 50e-12
@@ -18,6 +19,7 @@ for i in range(FRAME_COUNT):
     if os.path.exists(path):
         data = np.load(path)[DIMENSION.value, 0]
         vabs = max(vabs, np.max(np.abs(data)))
+norm = SymLogNorm(linthresh=vabs*0.05, vmin=-vabs, vmax=vabs)
 print(f"Using ±{vabs:.3g} as color range")
 
 # === Setup plot ===
@@ -28,6 +30,13 @@ img = ax.imshow(np.zeros((1, 1)),
                 vmax=vabs,
                 origin='lower',
                 aspect='auto')
+# img = ax.imshow(
+#     np.zeros((1, 1)),
+#     cmap='seismic',
+#     norm=norm,
+#     origin='lower',
+#     aspect='auto'
+# )
 cbar = fig.colorbar(img, ax=ax, label='Magnetisation (arb. units)')
 title = ax.set_title("Frame 0")
 ax.set_xlabel("X index")

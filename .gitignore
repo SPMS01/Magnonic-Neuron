@@ -1,6 +1,14 @@
 *.out
 *.png
 *.mp4
+*.mx3
+*.csv
+*.svg
+*.npy
 
 __pycache__
 switch_functionality_results
+dbs_output
+
+!neuron_dbs_template.mx3
+!reduced_neuron_dbs_template.mx3
